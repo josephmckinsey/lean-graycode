@@ -16,14 +16,14 @@
 
 \begin{definition}
     \label{def:next_to}
-    \lean{next_to}
+    %\lean{next_to}
     %\leanok
     A natural number $x$ is \textbf{next to} $y$ if $(x)_i = (y)_i$ for all $i$ except some $j$.
 \end{definition}
 
 \begin{theorem}
     \label{thm:bitwise_test_power_of_two}
-    \lean{is_power_of_two}
+    %\lean{is_power_of_two}
     %\leanok
     We can test if $x$ is a power of $2$ by making sure $x$ isn't 0 and then checking $x \& (x - 1) = 0$.
 \end{theorem}
@@ -43,7 +43,7 @@
 
 \begin{theorem}
     \label{thm:next_to_xor_pow_two}
-    \lean{next_to_xor_pow_two}
+    %\lean{next_to_xor_pow_two}
     \uses{def:next_to}
     %\leanok
     We can test if $x$ is next to $y$ by looking at $x \oplus y$. If $x \oplus y$ is a
@@ -60,7 +60,7 @@
 
 \begin{definition}
     \label{def:computable_next_to}
-    \lean{Computable.next_to}
+    %\lean{Computable.next_to}
     \uses{thm:bitwise_test_power_of_two,thm:next_to_xor_pow_two}
 
     This gives us a computable and equivalent definition of \textbf{next to}.
@@ -68,7 +68,7 @@
 
 \begin{definition}
     \label{def:gray_code}
-    \lean{gray_code}
+    %\lean{gray_code}
     \uses{def:next_to}
     A sequence $X_i$ of natural numbers $\mathbb{N}$ is a Gray code if
     for all $i$, $X_i$ is next to $X_{i+1}$.
@@ -76,7 +76,7 @@
 
 \begin{definition}
     \label{def:list_gray_code}
-    \lean{list_gray_code}
+    %\lean{list_gray_code}
 
     We can define a sequence $L_n(i)$ of naturals of length $2^n$ by iteratively concatenating
     a reversed copy of the previous iteration and adding/xoring $2^{n-1}$ to each element.
@@ -85,7 +85,7 @@
 
 \begin{theorem}
     \label{thm:list_is_stable}
-    \lean{list_is_stable}
+    %\lean{list_is_stable}
     \uses{def:list_gray_code}
 
     Let $L_n$ be the $n$th iteration of the list, then $\forall m \ge n$, $L_n(i) = L_m(i)$ for all $i < 2^n$.
@@ -97,7 +97,7 @@
 
 \begin{theorem}
     \label{thm:recursion_principle}
-    \lean{pow_two_complement_induction}
+    %\lean{pow_two_complement_induction}
 
     In order to translate our sequence into an index based inductive principle instead:
     
@@ -112,7 +112,7 @@
 
 \begin{definition}
     \label{def:recursive_gray_code}
-    \lean{recursive_gray_code}
+    %\lean{recursive_gray_code}
 
     \uses{thm:recursion_principle}
     There is a sequence $x$ that is a defined using $2^n \le i < 2^{n+1}$, $x_i = 2^n \oplus x_{(2^{n+1} - 1) \oplus i}$
@@ -121,7 +121,7 @@
 
 \begin{theorem}
     \label{thm:list_is_recursive}
-    \lean{list_is_recursive}
+    %\lean{list_is_recursive}
     \uses{def:list_gray_code,def:recursive_gray_code}
 
     We can see that $x_i = L_n(i)$ for all $i < 2^n$. 
@@ -147,7 +147,7 @@
 
 \begin{theorem}
     \label{thm:list_gray_code_correctness}
-    \lean{list_gray_code_correctness}
+    %\lean{list_gray_code_correctness}
     \uses{def:list_gray_code,def:gray_code}
 
     Each list $L_n$ is a gray code on $\mathbb{Z} / 2^n \mathbb{Z}$.
@@ -170,7 +170,7 @@
 
 \begin{theorem}
     \label{thm:recursive_gray_code_correctness}
-    \lean{recursive_gray_code_correctness}
+    %\lean{recursive_gray_code_correctness}
 
     \uses{def:recursive_gray_code}
 
@@ -184,13 +184,13 @@
 
 \begin{definition}
     \label{def:direct_gray_code}
-    \lean{direct_gray_code}
+    %\lean{direct_gray_code}
     We can also construct the same Gray code simply by doing $n \oplus (n >>> 1)$.
 \end{definition}
 
 \begin{theorem}
     \label{def:direct_is_recursive}
-    \lean{direct_is_recursive}
+    %\lean{direct_is_recursive}
     \uses{def:gray_code,def:recursive_gray_code}
 
     This is eqvuivalent to the recursive definition.
@@ -218,6 +218,6 @@
 
 \begin{definition}
     \label{def:recursive_inverse}
-    \lean{recursive_inverse}
+    %\lean{recursive_inverse}
     We can also find an inverse to $x$ with recursion.
 \end{definition}
