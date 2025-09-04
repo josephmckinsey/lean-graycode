@@ -1,3 +1,4 @@
+% !TEX root =blueprint/src/print.tex
 % In this file you should put the actual content of the blueprint.
 % It will be used both by the web and the print version.
 % It should *not* include the \begin{document}
@@ -5,3 +6,218 @@
 % If you want to split the blueprint content into several files then
 % the current file can be a simple sequence of \input. Otherwise It
 % can start with a \section or \chapter for instance.
+
+\chapter{Gray Code Fundamentals}
+
+\begin{definition}
+    If $x$ is a natural number, then let $(x)_i$ be $x$'s $i$th digit when expanded in binary.
+    \label{def:test_digit}
+\end{definition}
+
+\begin{definition}
+    \label{def:next_to}
+    \lean{next_to}
+    %\leanok
+    A natural number $x$ is \textbf{next to} $y$ if $(x)_i = (y)_i$ for all $i$ except some $j$.
+\end{definition}
+
+\begin{theorem}
+    \label{thm:bitwise_test_power_of_two}
+    \lean{is_power_of_two}
+    %\leanok
+    We can test if $x$ is a power of $2$ by making sure $x$ isn't 0 and then checking $x \& (x - 1) = 0$.
+\end{theorem}
+
+\begin{proof}
+    %\leanok
+    Note that $2^k - 1 = 1 + \cdots + 2^{k-1}$. Thus $(2^k - 1)_i = 1$ for
+    all $i \le {k-1}$.
+
+    When $x = 2^k$, since $(x)_k = 1$ and all others are $0$, while $(x - 1)_k = 1$ for all $i \le k-1$ and $0$ otherwise. Thus $x \& (x - 1) = 0$ and we return true.
+
+    If $x = 0$, then we return false correctly.
+    
+    Suppose that $2^i < x < 2^{i+1}$, then $(x)_i = 1$ and $2^i \le (x - 1) < 2^{i-1}$,
+    so thus $(x-1)_i = 1$. Thus $x \& (x - 1) \neq 0$.
+\end{proof}
+
+\begin{theorem}
+    \label{thm:next_to_xor_pow_two}
+    \lean{next_to_xor_pow_two}
+    \uses{def:next_to}
+    %\leanok
+    We can test if $x$ is next to $y$ by looking at $x \oplus y$. If $x \oplus y$ is a
+    power of two, then $x$ is next to $y$.
+
+    Similarly, the $x \oplus 2^n$ is next to $x$ for any $x$.
+\end{theorem}
+
+\begin{proof}
+    $x$ is next to $y$ iff there is some $i$ alone where they are different.
+    This occurs iff $(x \oplus y) = (x)_i \oplus (y)_i = 1$ only for $i$.
+    $(x \oplus y)_i$ for only $i$ iff $(x \oplus y) = 2^i$.
+\end{proof}
+
+\begin{definition}
+    \label{def:computable_next_to}
+    \lean{Computable.next_to}
+    \uses{thm:bitwise_test_power_of_two,thm:next_to_xor_pow_two}
+
+    This gives us a computable and equivalent definition of \textbf{next to}.
+\end{definition}
+
+\begin{definition}
+    \label{def:gray_code}
+    \lean{gray_code}
+    \uses{def:next_to}
+    A sequence $X_i$ of natural numbers $\mathbb{N}$ is a Gray code if
+    for all $i$, $X_i$ is next to $X_{i+1}$.
+\end{definition}
+
+\begin{definition}
+    \label{def:list_gray_code}
+    \lean{list_gray_code}
+
+    We can define a sequence $L_n(i)$ of naturals of length $2^n$ by iteratively concatenating
+    a reversed copy of the previous iteration and adding/xoring $2^{n-1}$ to each element.
+    We start with $[0]$, then $[0, 1]$, then $[0, 1, 3, 2]$, and so on.
+\end{definition}
+
+\begin{theorem}
+    \label{thm:list_is_stable}
+    \lean{list_is_stable}
+    \uses{def:list_gray_code}
+
+    Let $L_n$ be the $n$th iteration of the list, then $\forall m \ge n$, $L_n(i) = L_m(i)$ for all $i < 2^n$.
+\end{theorem}
+
+\begin{proof}
+    Trivial.
+\end{proof}
+
+\begin{theorem}
+    \label{thm:recursion_principle}
+    \lean{pow_two_complement_induction}
+
+    In order to translate our sequence into an index based inductive principle instead:
+    
+    If $P(0)$ is true, and $\forall n, \forall 2^n \le i < 2^{n+1}, P((2^{n+1} - 1) \oplus i) \to P(i)$, then
+    $P$ true for all $n$
+\end{theorem}
+
+\begin{proof}
+    When $2^n \le i < 2^{n+1}$, then $i \oplus (2^{n+1} - 1) < 2^n$, so
+    the sequence decreases.
+\end{proof}
+
+\begin{definition}
+    \label{def:recursive_gray_code}
+    \lean{recursive_gray_code}
+
+    \uses{thm:recursion_principle}
+    There is a sequence $x$ that is a defined using $2^n \le i < 2^{n+1}$, $x_i = 2^n \oplus x_{(2^{n+1} - 1) \oplus i}$
+    and $x_0 = 0$.
+\end{definition}
+
+\begin{theorem}
+    \label{thm:list_is_recursive}
+    \lean{list_is_recursive}
+    \uses{def:list_gray_code,def:recursive_gray_code}
+
+    We can see that $x_i = L_n(i)$ for all $i < 2^n$. 
+\end{theorem}
+
+\begin{proof}
+    \uses{thm:recursion_principle,thm:list_is_stable}
+    We will prove this by showing that $L_n$ has the same induction property as $x$.
+
+    Note that if $L_{n+1}$ is the $(n+1)$th list and $L_n$ is the $n$th list, $L_{n+1} = L_n \cdot (2^n \oplus \mathrm{reverse}(L_n))$. Thus
+    \begin{align*}
+    L_{n+1}(i) &= (L_n \cdot (2^n \oplus \mathrm{reverse}(L_n)))(i) \\
+        &= (2^n \oplus \mathrm{reverse}(L_n))(i - 2^n) \\
+        &= 2^n \oplus (\mathrm{reverse}(L_n))(i \oplus 2^n) \\
+        &= 2^n \oplus L_n(i \oplus 2^n \oplus (2^n - 1)) \\
+        &= 2^n \oplus L_n({i \oplus (2^{n+1} - 1)})
+    \end{align*}
+
+    Now assuming that $L_n(i) = x_i$ for all $i < 2^n$, since $i \oplus (2^{n+1} - 1) < 2^n$, we have
+    $x_i = 2^n \oplus x_{i \oplus (2^{n+1} - 1)} = L_{n+1}(i)$.
+\end{proof}
+
+
+\begin{theorem}
+    \label{thm:list_gray_code_correctness}
+    \lean{list_gray_code_correctness}
+    \uses{def:list_gray_code,def:gray_code}
+
+    Each list $L_n$ is a gray code on $\mathbb{Z} / 2^n \mathbb{Z}$.
+\end{theorem}
+
+\begin{proof}
+    \uses{thm:next_to_xor_pow_two}
+    It is obviously true for $n = 0$.
+
+    By the stability property, $L_{n+1}$ is a gray code for $i, i+1 < 2^n$.
+
+    Since the reverse of a list is a gray code, then for $2^n \le i, i+1 < 2^{n+1}$, 
+    $L_{n+1}$ is a gray code there as well.
+
+    When $i = 2^n - 1$, then $L_{n+1}(2^n - 1) = L_{n}(2^n - 1)$ and $L_{n+1}(2^n) = 2^n \oplus L_{n}(2^n - 1)$,
+    so thus $L_{n+1}(2^n - 1) \oplus L_{n+1}(2^n) = 2^n$ and they are next to each other.
+
+    When $i = 2^{n+1} - 1$, then $L_{n+1}(2^{n+1} - 1) = 2^n \oplus L_{n}(0) = L_{n+1}(0)$ so thus they are next to each other.
+\end{proof}
+
+\begin{theorem}
+    \label{thm:recursive_gray_code_correctness}
+    \lean{recursive_gray_code_correctness}
+
+    \uses{def:recursive_gray_code}
+
+    The recursive gray code is in fact a gray code.
+\end{theorem}
+
+\begin{proof}
+    \uses{thm:list_gray_code_correctness,thm:list_is_recursive}
+    Trivial application of the previous theorem.
+\end{proof}
+
+\begin{definition}
+    \label{def:direct_gray_code}
+    \lean{direct_gray_code}
+    We can also construct the same Gray code simply by doing $n \oplus (n >>> 1)$.
+\end{definition}
+
+\begin{theorem}
+    \label{def:direct_is_recursive}
+    \lean{direct_is_recursive}
+    \uses{def:gray_code,def:recursive_gray_code}
+
+    This is eqvuivalent to the recursive definition.
+\end{theorem}
+
+\begin{proof}
+    \uses{thm:recursion_principle}
+    We shall prove this using the same induction principle.
+
+    It is obviously true for $n = 0$.
+
+    Let $2^n \le j < 2^{n+1}$ and let $i = (j \oplus (2^{n+1} - 1))$.
+    Then we want to prove that $x_{i \oplus (2^{n+1} - 1)} = (i \oplus (2^{n+1} - 1)) \oplus ((i \oplus (2^{n+1} - 1)) >>> 1)$
+    given that $x_i = i \oplus (i >>> 1)$.
+
+    This amoutns to a bunch of bitwise definitions:
+    \begin{align*}
+        (i \oplus (2^{n+1} - 1)) \oplus ((i \oplus (2^{n+1} - 1)) >>> 1)
+        &= (2^{n+1} - 1) \oplus i \oplus (i >>> 1) \oplus ((2^{n+1} - 1) >>> 1) \\
+        &= (2^{n+1} - 1) \oplus x_i \oplus (2^{n} - 1) \\
+        &= 2^n \oplus x_i \\
+        &= x_{i \oplus (2^{n+1} - 1)} 
+    \end{align*}
+\end{proof}
+
+\begin{definition}
+    \label{def:recursive_inverse}
+    \lean{recursive_inverse}
+    We can also find an inverse to $x$ with recursion.
+\end{definition}
