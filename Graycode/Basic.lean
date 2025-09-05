@@ -1,4 +1,5 @@
-import Mathlib
+--import Mathlib
+import Mathlib.Analysis.Normed.Lp.lpSpace
 
 #synth AddCommGroup (Fin 2)
 
@@ -36,8 +37,6 @@ def IsGrayCode (f : ℕ → ℕ) : Prop :=
   ∀ i, ∃ j, (f i).testBit j != (f (i+1)).testBit j ∧
     ∀k ≠ j, (f i).testBit k = (f i).testBit k
 
-#exit
-
 instance : NormedAddCommGroup (Fin 2) where
   norm n := (n : ℝ)
   dist_self := by simp
@@ -70,7 +69,7 @@ def test : lp (fun (_ : Fin 3) => Fin 2) 1 := ⟨fun _ ↦ 1, finmem _⟩
 
 #check lp.instNormSubtypePreLpMemAddSubgroup
 
-#eval norm test
+--#eval norm test
 
 local instance : Norm (lp E 1) where
   norm f := ∑  i, ‖f i‖

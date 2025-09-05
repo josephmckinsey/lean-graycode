@@ -220,4 +220,39 @@
     \label{def:recursive_inverse}
     %\lean{recursive_inverse}
     We can also find an inverse to $x$ with recursion.
+
+    For $i = 0$, $y_0 = 0$. For $2^n \le i < 2^{n+1}$, then $y_i = (2^{n+1} - 1) \oplus y_{i \oplus 2^n}$.
+
+    Similarly we can have a recursion principle since $i \oplus 2^n$ is smaller than $i$.
 \end{definition}
+
+\begin{theorem}
+    \label{thm:recursive_inverse_is_inverse}
+    %\lean{recursive_inverse_is_inverse}
+    \uses{def:recursive_inverse,def:recursive_gray_code}
+    Now we must prove that $y_{x_i} = x_{y_i} = i$.
+\end{theorem}
+
+\begin{proof}
+    ???
+\end{proof}
+
+\begin{definition}
+    \label{def:computable_inverse}
+    %\lean{computable_inverse}
+    
+    Let $m = n$. While $m > 0$, let $m := m >> 1$ and $n := n \oplus m$.
+    At the end, $n$ will be equal to the inverse $y_i$.
+\end{definition}
+
+\begin{theorem}
+    \label{thm:computable_inverse_is_equivalent}
+    %\lean{computable_inverse_is_equivalent}
+    \uses{def:recursive_inverse}
+
+    The above procedure is equivalent to the recursive definition of $y$.
+\end{theorem}
+
+\begin{proof}
+    ???
+\end{proof}
