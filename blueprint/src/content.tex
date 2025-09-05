@@ -67,11 +67,19 @@
 \end{definition}
 
 \begin{definition}
-    \label{def:gray_code}
-    %\lean{gray_code}
+    \label{def:unit_step_sequence}
+    %\lean{IsUnitStepSequence}
     \uses{def:next_to}
-    A sequence $X_i$ of natural numbers $\mathbb{N}$ is a Gray code if
+    A sequence $X_i$ of natural numbers $\mathbb{N}$ is a "unit step sequence" if
     for all $i$, $X_i$ is next to $X_{i+1}$.
+\end{definition}
+
+\begin{definition}
+    \label{def:gray_code}
+    %\lean{IsGrayCode}
+    \uses{def:unit_step_sequence}
+
+    A gray code is a bijective unit step sequence.
 \end{definition}
 
 \begin{definition}
@@ -144,23 +152,32 @@
     $x_i = 2^n \oplus x_{i \oplus (2^{n+1} - 1)} = L_{n+1}(i)$.
 \end{proof}
 
+\begin{lemma}
+    \label{thm:reverse_unit_step}
+    \uses{def:unit_step_sequence}
+    The reverse of a unit step list is also a unit step sequence.
+\end{lemma}
+
+\begin{proof}
+    Trivial.
+\end{proof}
 
 \begin{theorem}
-    \label{thm:list_gray_code_correctness}
-    %\lean{list_gray_code_correctness}
-    \uses{def:list_gray_code,def:gray_code}
+    \label{thm:list_gray_code_unit_step}
+    %\lean{list_gray_code_unit_step}
+    \uses{def:list_gray_code,def:unit_step_sequence}
 
-    Each list $L_n$ is a gray code on $\mathbb{Z} / 2^n \mathbb{Z}$.
+    Each list $L_n$ is a unit step sequence on $\mathbb{Z} / 2^n \mathbb{Z}$.
 \end{theorem}
 
 \begin{proof}
-    \uses{thm:next_to_xor_pow_two}
+    \uses{thm:next_to_xor_pow_two,thm:reverse_unit_step,thm:list_is_stable}
     It is obviously true for $n = 0$.
 
-    By the stability property, $L_{n+1}$ is a gray code for $i, i+1 < 2^n$.
+    By the stability property, $L_{n+1}$ is a unit step sequence for $i, i+1 < 2^n$.
 
-    Since the reverse of a list is a gray code, then for $2^n \le i, i+1 < 2^{n+1}$, 
-    $L_{n+1}$ is a gray code there as well.
+    Since the reverse of a unit step sequence is a unit step sequence, then for
+    $2^n \le i, i+1 < 2^{n+1}$, $L_{n+1}$ is a unit step sequence there as well.
 
     When $i = 2^n - 1$, then $L_{n+1}(2^n - 1) = L_{n}(2^n - 1)$ and $L_{n+1}(2^n) = 2^n \oplus L_{n}(2^n - 1)$,
     so thus $L_{n+1}(2^n - 1) \oplus L_{n+1}(2^n) = 2^n$ and they are next to each other.
@@ -169,16 +186,16 @@
 \end{proof}
 
 \begin{theorem}
-    \label{thm:recursive_gray_code_correctness}
-    %\lean{recursive_gray_code_correctness}
+    \label{thm:recursive_gray_code_unit_step}
+    %\lean{recursive_gray_code_unit_step}
 
     \uses{def:recursive_gray_code}
 
-    The recursive gray code is in fact a gray code.
+    The recursive gray code is in fact a unit step sequence.
 \end{theorem}
 
 \begin{proof}
-    \uses{thm:list_gray_code_correctness,thm:list_is_recursive}
+    \uses{thm:list_gray_code_unit_step,thm:list_is_recursive}
     Trivial application of the previous theorem.
 \end{proof}
 
@@ -189,9 +206,20 @@
 \end{definition}
 
 \begin{theorem}
+    \label{thm:direct_is_xor_homomorphism}
+
+    \uses{def:direct_gray_code}
+    From the direct gray code, it is obvious that $f(i \oplus j) = f(i) \oplus f(j)$.
+\end{theorem}
+
+\begin{proof}
+    Trivial.
+\end{proof}
+
+\begin{theorem}
     \label{def:direct_is_recursive}
     %\lean{direct_is_recursive}
-    \uses{def:gray_code,def:recursive_gray_code}
+    \uses{def:unit_step_sequence,def:recursive_gray_code,def:direct_gray_code}
 
     This is eqvuivalent to the recursive definition.
 \end{theorem}
@@ -206,7 +234,7 @@
     Then we want to prove that $x_{i \oplus (2^{n+1} - 1)} = (i \oplus (2^{n+1} - 1)) \oplus ((i \oplus (2^{n+1} - 1)) >>> 1)$
     given that $x_i = i \oplus (i >>> 1)$.
 
-    This amoutns to a bunch of bitwise definitions:
+    This amounts to a bunch of bitwise definitions:
     \begin{align*}
         (i \oplus (2^{n+1} - 1)) \oplus ((i \oplus (2^{n+1} - 1)) >>> 1)
         &= (2^{n+1} - 1) \oplus i \oplus (i >>> 1) \oplus ((2^{n+1} - 1) >>> 1) \\
@@ -215,6 +243,7 @@
         &= x_{i \oplus (2^{n+1} - 1)} 
     \end{align*}
 \end{proof}
+
 
 \begin{definition}
     \label{def:recursive_inverse}
@@ -234,7 +263,23 @@
 \end{theorem}
 
 \begin{proof}
-    ???
+    \uses{thm:recursion_principle,def:recursive_gray_code,def:recursive_inverse}
+    First, we'll show that $y_{x_{i}} = i$ by induction using $x$'s induction principle.
+    When $i = 0$, $y_{x_0} = y_0 = 0$. If $2^n \le i < 2^{n+1}$, then $2^n \le x_i < 2^{n+1}$.
+    So $y_{x_i} = (2^{n+1} - 1) \oplus y_{x_i \oplus 2^n}$. Since $x_i = 2^n \oplus x_{i \oplus (2^{n+1} - 1)}$ and $y_{x_{i \oplus (2^{n+1} - 1)}} = i \oplus (2^{n+1} - 1)$ from the induction principle:
+    \begin{align*}
+        y_{x_i} &= (2^{n+1} - 1) \oplus y_{x_i \oplus 2^n} = (2^{n+1} - 1) \oplus y_{x_{i \oplus (2^{n+1} - 1)}} \\
+        &= (2^{n+1} - 1) \oplus (i \oplus (2^{n+1} - 1)) = i
+    \end{align*}
+
+    For the reverse direction, we use $y$'s induction principle.
+    When $i = 0$, $x_{y_0} = 0$. For $2^n \le i < 2^{n+1}$, we have $2^n \le y_i < 2^{n+1}$.
+    Similar to before, we will apply the induction principle in a sequence of calculations whil unfolding $x$.
+
+    \begin{align*}
+        x_{y_i} &= 2^n \oplus x_{y_i \oplus (2^{n+1} - 1)} = 2^n \oplus x_{y_{i \oplus 2^n}} \\
+        &= 2^n \oplus i \oplus 2^n = i
+    \end{align*}
 \end{proof}
 
 \begin{definition}
@@ -243,16 +288,36 @@
     
     Let $m = n$. While $m > 0$, let $m := m >> 1$ and $n := n \oplus m$.
     At the end, $n$ will be equal to the inverse $y_i$.
+
+    We can implement this recursively by descent on $m, m/2, \ldots$.
 \end{definition}
 
 \begin{theorem}
     \label{thm:computable_inverse_is_equivalent}
     %\lean{computable_inverse_is_equivalent}
-    \uses{def:recursive_inverse}
+    \uses{def:recursive_inverse,def:computable_inverse}
 
     The above procedure is equivalent to the recursive definition of $y$.
 \end{theorem}
 
 \begin{proof}
-    ???
+    \uses{thm:recursion_principle,def:recursive_gray_code,def:recursive_inverse}
+    Let the procedure be called $f$.
+
+    Once again, we prove this by induction on $y$'s recursive principle. The base case is obvious.
+
+    First, prove by induction on $m$ that $f(x \oplus y) = f(x) \oplus f(y)$. Then show that
+    $f(2^n) = 2^{n+1} - 1$. This gives that $f(x) = f(x \oplus 2^n) \oplus (2^{n+1} - 1)$.
+    By the inductive hypothesis, we are complete, since this is the same induction principle as $y$.
+\end{proof}
+
+\begin{theorem}
+    \label{thm:recursive_is_gray_code}
+    \uses{def:recursive_gray_code,def:gray_code}
+    The recursive sequence is a gray code.
+\end{theorem}
+
+\begin{proof}
+    \uses{thm:recursive_gray_code_unit_step,def:gray_code,thm:recursive_inverse_is_inverse}
+    Invertibility and unit step sequence 
 \end{proof}
