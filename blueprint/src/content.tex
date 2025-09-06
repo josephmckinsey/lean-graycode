@@ -25,15 +25,15 @@
 
 \begin{theorem}
     \label{thm:bitwise_test_power_of_two}
-    %\lean{bitwise_test_two_power}
-    %\leanok
+    \lean{bitwise_test_power_of_two}
+    \leanok
     We can test if $x$ is a power of $2$ by making sure $x$ isn't 0 and then checking $x \& (x - 1) = 0$.
 \end{theorem}
 
 \begin{proof}
-    %\leanok
-    Note that $2^k - 1 = 1 + \cdots + 2^{k-1}$. Thus $(2^k - 1)_i = 1$ for
-    all $i \le {k-1}$.
+    \leanok
+    %Note that $2^k - 1 = 1 + \cdots + 2^{k-1}$. Thus $(2^k - 1)_i = 1$ for
+    %all $i \le {k-1}$.
 
     When $x = 2^k$, since $(x)_k = 1$ and all others are $0$, while $(x - 1)_k = 1$ for all $i \le k-1$ and $0$ otherwise. Thus $x \& (x - 1) = 0$ and we return true.
 

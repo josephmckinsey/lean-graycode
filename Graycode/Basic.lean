@@ -1,5 +1,7 @@
-import Mathlib
---import Mathlib.Analysis.Normed.Lp.lpSpace
+--import Mathlib
+import Mathlib.Algebra.Ring.GeomSum
+import Mathlib.Data.Nat.Bitwise
+import Mathlib.Analysis.Normed.Ring.Lemmas  -- I have no idea why this is necessary
 
 --#eval Nat.testBit 1 0
 
@@ -72,6 +74,57 @@ lemma next_to_xor_two_pow (x y : ℕ) :
     rw [show z.testBit j = false by simp [h.2 j h']]
     rw [Nat.testBit_two_pow_of_ne (by grind)]
 
+lemma nat_is_zero_or_between_two_pow (i : ℕ) :
+  i = 0 ∨ ∃n, 2^n ≤ i ∧ i < 2^(n+1) := by
+  by_cases i = 0
+  · left; assumption
+  right
+  use Nat.log2 i
+  constructor
+  · exact Nat.log2_self_le (by assumption)
+  exact Nat.lt_log2_self
+
+lemma nat_is_zero_two_pow_or_between_two_pow (i : ℕ) :
+  i = 0 ∨ (∃n, i = 2^n) ∨  ∃n, 2^n < i ∧ i < 2^(n+1) := by
+  rcases (nat_is_zero_or_between_two_pow i) with h | ⟨n, h⟩
+  · left; assumption
+  right
+  rcases h.1.lt_or_eq with h' | rfl
+  · right; exact ⟨n, h', h.2⟩
+  left; use n
+
+lemma order_two_pow_testBit_true (x n : ℕ) (h1 : 2 ^ n ≤ x) (h2 : x < 2 ^ (n + 1)) :
+  x.testBit n = true := by
+  have : x >>> n = 1 := by
+    rw [Nat.shiftRight_eq_div_pow]
+    apply Nat.div_eq_of_lt_le
+    · simp [h1]
+    rw [mul_comm, <-Nat.pow_add_one]
+    exact h2
+  unfold Nat.testBit
+  simp [this]
+
+lemma bitwise_test_power_of_two (x : ℕ) (nezero : x ≠ 0) :
+  x &&& (x - 1) = 0 ↔ x.isPowerOfTwo := by
+  rcases nat_is_zero_two_pow_or_between_two_pow x with _ | ⟨n, h⟩ | ⟨n, h⟩
+  · contradiction
+  · simp [Nat.isPowerOfTwo, h]
+  have : ¬x.isPowerOfTwo := by
+    rw [Nat.isPowerOfTwo, not_exists]
+    intro i h'
+    rw [h'] at h
+    rw [Nat.pow_lt_pow_iff_right (a := 2) (n := n) (m := i) (h := by norm_num)] at h
+    rw [Nat.pow_lt_pow_iff_right (a := 2) (h := by norm_num)] at h
+    linarith
+  simp only [this, iff_false, ne_eq]
+  suffices (x &&& (x - 1)).testBit n = true by grind
+  have h1 : x.testBit n = true :=
+    order_two_pow_testBit_true x n h.1.le h.2
+  have h2 : (x - 1).testBit n = true := by
+    grind [order_two_pow_testBit_true]
+  rw [Nat.testBit_and, h1, h2]
+  rfl
+
 def Computable.next_to (x y : ℕ) : Bool :=
   let diff := x ^^^ y
   if diff = 0 then
@@ -97,46 +150,5 @@ info: true
 -/
 #guard_msgs in
 #eval Computable.next_to 4 5
-
-def IsGrayCode (f : ℕ → ℕ) : Prop :=
-  ∀ i, ∃ j, (f i).testBit j != (f (i+1)).testBit j ∧
-    ∀k ≠ j, (f i).testBit k = (f i).testBit k
-
-instance : NormedAddCommGroup (Fin 2) where
-  norm n := (n : ℝ)
-  dist_self := by simp
-  dist_comm := by
-    intros x y
-    fin_cases x, y <;> simp
-  dist_triangle := by
-    intros x y z
-    fin_cases x, y, z <;> simp
-  eq_of_dist_eq_zero := by
-    intros x y
-    fin_cases x, y <;> simp
-
-
-
-variable {α : Type*}
-variable [Fintype α] {E : α → Type*} {p q : ENNReal} [∀ i, NormedAddCommGroup (E i)]
-
-def l1norm [Fintype α] (f : ∀ i, E i) : ℝ := ∑ i, ‖f i‖
-
-def x : Fin 5 → Fin 2 := 1
-
-#check NNNorm
-
-#eval l1norm x
-
-lemma finmem (f : ∀ i, E i) : Memℓp f 1 := memℓp_gen (Summable.of_finite)
-
-def test : lp (fun (_ : Fin 3) => Fin 2) 1 := ⟨fun _ ↦ 1, finmem _⟩
-
-#check lp.instNormSubtypePreLpMemAddSubgroup
-
---#eval norm test
-
-local instance : Norm (lp E 1) where
-  norm f := ∑  i, ‖f i‖
 
 def hello := "world"
