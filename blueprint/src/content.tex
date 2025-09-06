@@ -12,18 +12,20 @@
 \begin{definition}
     If $x$ is a natural number, then let $(x)_i$ be $x$'s $i$th digit when expanded in binary.
     \label{def:test_digit}
+    \lean{Nat.testBit}
+    \leanok
 \end{definition}
 
 \begin{definition}
     \label{def:next_to}
-    %\lean{next_to}
-    %\leanok
+    \lean{next_to}
+    \leanok
     A natural number $x$ is \textbf{next to} $y$ if $(x)_i = (y)_i$ for all $i$ except some $j$.
 \end{definition}
 
 \begin{theorem}
     \label{thm:bitwise_test_power_of_two}
-    %\lean{is_power_of_two}
+    %\lean{bitwise_test_two_power}
     %\leanok
     We can test if $x$ is a power of $2$ by making sure $x$ isn't 0 and then checking $x \& (x - 1) = 0$.
 \end{theorem}
@@ -42,10 +44,10 @@
 \end{proof}
 
 \begin{theorem}
-    \label{thm:next_to_xor_pow_two}
-    %\lean{next_to_xor_pow_two}
+    \label{thm:next_to_xor_two_pow}
+    \lean{next_to_xor_two_pow}
     \uses{def:next_to}
-    %\leanok
+    \leanok
     We can test if $x$ is next to $y$ by looking at $x \oplus y$. If $x \oplus y$ is a
     power of two, then $x$ is next to $y$.
 
@@ -53,15 +55,16 @@
 \end{theorem}
 
 \begin{proof}
+    \leanok
     $x$ is next to $y$ iff there is some $i$ alone where they are different.
-    This occurs iff $(x \oplus y) = (x)_i \oplus (y)_i = 1$ only for $i$.
+    This occurs iff $(x \oplus y)_i = (x)_i \oplus (y)_i = 1$ only for $i$.
     $(x \oplus y)_i$ for only $i$ iff $(x \oplus y) = 2^i$.
 \end{proof}
 
 \begin{definition}
     \label{def:computable_next_to}
     %\lean{Computable.next_to}
-    \uses{thm:bitwise_test_power_of_two,thm:next_to_xor_pow_two}
+    \uses{thm:bitwise_test_power_of_two,thm:next_to_xor_two_pow}
 
     This gives us a computable and equivalent definition of \textbf{next to}.
 \end{definition}
@@ -105,7 +108,7 @@
 
 \begin{theorem}
     \label{thm:recursion_principle}
-    %\lean{pow_two_complement_induction}
+    %\lean{two_pow_complement_induction}
 
     In order to translate our sequence into an index based inductive principle instead:
     
@@ -171,7 +174,7 @@
 \end{theorem}
 
 \begin{proof}
-    \uses{thm:next_to_xor_pow_two,thm:reverse_unit_step,thm:list_is_stable}
+    \uses{thm:next_to_xor_two_pow,thm:reverse_unit_step,thm:list_is_stable}
     It is obviously true for $n = 0$.
 
     By the stability property, $L_{n+1}$ is a unit step sequence for $i, i+1 < 2^n$.
