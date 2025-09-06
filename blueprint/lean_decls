@@ -2,3 +2,7 @@ Nat.testBit
 next_to
 bitwise_test_power_of_two
 next_to_xor_two_pow
+Computable.next_to
+IsUnitStepSeq
+IsGrayCode
+list_gray_code

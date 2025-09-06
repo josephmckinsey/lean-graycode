@@ -131,7 +131,17 @@ def Computable.next_to (x y : ℕ) : Bool :=
     false
   else diff &&& (diff - 1) == 0
 
-#check Nat.testBit
+lemma computable_next_to_correct (x y : ℕ) :
+  next_to x y ↔ Computable.next_to x y := by
+  unfold Computable.next_to
+  rw [next_to_xor_two_pow]
+  if h : x ^^^ y = 0 then
+    simp [h, Nat.isPowerOfTwo]
+    intro i; positivity
+  else
+    rw [<-bitwise_test_power_of_two _ h]
+    rw [if_neg h]
+    exact beq_iff_eq.symm
 
 /--
 info: true
@@ -150,5 +160,34 @@ info: true
 -/
 #guard_msgs in
 #eval Computable.next_to 4 5
+
+def IsUnitStepSeq {α : Type*} [AddGroupWithOne α] (x : α → ℕ) : Prop :=
+  ∀i, next_to (x i) (x (i + 1))
+
+def IsGrayCode {α : Type*} [AddGroupWithOne α] (x : α → ℕ) : Prop :=
+  IsUnitStepSeq x ∧ Function.Injective x
+
+def list_gray_code : ℕ → List ℕ
+| 0 => [0]
+| .succ n => (list_gray_code n).append ((list_gray_code n).reverse.map (2^n ^^^ ·))
+
+
+def is_list_gray_code (x : List ℕ) : Bool := Id.run do
+  let mut is_good := true
+  for i in List.range (x.length + 1) do
+    is_good := is_good && Computable.next_to x[i % x.length]! x[(i + 1) % x.length]!
+  return is_good
+
+/--
+info: [0, 1, 3, 2]
+-/
+#guard_msgs in
+#eval list_gray_code 2
+
+/--
+info: true
+-/
+#guard_msgs in
+#eval is_list_gray_code (list_gray_code 5)
 
 def hello := "world"

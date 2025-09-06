@@ -63,7 +63,8 @@
 
 \begin{definition}
     \label{def:computable_next_to}
-    %\lean{Computable.next_to}
+    \lean{Computable.next_to}
+    \leanok
     \uses{thm:bitwise_test_power_of_two,thm:next_to_xor_two_pow}
 
     This gives us a computable and equivalent definition of \textbf{next to}.
@@ -71,7 +72,8 @@
 
 \begin{definition}
     \label{def:unit_step_sequence}
-    %\lean{IsUnitStepSequence}
+    \lean{IsUnitStepSeq}
+    \leanok
     \uses{def:next_to}
     A sequence $X_i$ of natural numbers $\mathbb{N}$ is a "unit step sequence" if
     for all $i$, $X_i$ is next to $X_{i+1}$.
@@ -79,15 +81,17 @@
 
 \begin{definition}
     \label{def:gray_code}
-    %\lean{IsGrayCode}
+    \lean{IsGrayCode}
+    \leanok
     \uses{def:unit_step_sequence}
 
-    A gray code is a bijective unit step sequence.
+    A gray code is an injective unit step sequence (and preferably with a nice image).
 \end{definition}
 
 \begin{definition}
     \label{def:list_gray_code}
-    %\lean{list_gray_code}
+    \lean{list_gray_code}
+    \leanok
 
     We can define a sequence $L_n(i)$ of naturals of length $2^n$ by iteratively concatenating
     a reversed copy of the previous iteration and adding/xoring $2^{n-1}$ to each element.
