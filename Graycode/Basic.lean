@@ -190,4 +190,33 @@ info: true
 #guard_msgs in
 #eval is_list_gray_code (list_gray_code 5)
 
+@[simp, grind =]
+lemma list_gray_code_length (n : ℕ) :
+  (list_gray_code n).length = 2^n := by
+  fun_induction list_gray_code n with
+  | case1 => rfl
+  | case2 n h => simp [h]; ring
+
+lemma list_is_stable_once (n : ℕ) (i : ℕ) (h : i < 2 ^ n) :
+  (list_gray_code n)[i]'(by simp [h]) = (list_gray_code (n+1))[i]'(by grind) := by
+  have := list_gray_code.eq_2 n
+  simp only [Nat.succ_eq_add_one, List.map_reverse, List.append_eq] at this
+  simp_rw [this]
+  rw [List.getElem_append_left']
+
+lemma list_is_stable (n : ℕ) (i : ℕ) (h : i < 2 ^ n) (m : ℕ) (h' : n ≤ m) :
+  (list_gray_code n)[i]'(by simp [h]) = (list_gray_code m)[i]'(by
+    rw [list_gray_code_length]
+    suffices 2^n ≤ 2^m by linarith
+    apply Nat.pow_le_pow_right (by simp) (by assumption)
+  ) := by
+  induction m, h' using Nat.le_induction with
+  | base => rfl
+  | succ k kh h' =>
+    rw [h']
+    apply list_is_stable_once
+    suffices 2^n ≤ 2^k by linarith
+    apply Nat.pow_le_pow_right (by simp) (by assumption)
+
+
 def hello := "world"
