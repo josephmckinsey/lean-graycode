@@ -108,12 +108,14 @@
 \end{theorem}
 
 \begin{proof}
+    \leanok
     Trivial.
 \end{proof}
 
 \begin{theorem}
     \label{thm:recursion_principle}
-    %\lean{two_pow_complement_induction}
+    \lean{binaryComplementRec}
+    \leanok
 
     In order to translate our sequence into an index based inductive principle instead:
     
@@ -122,13 +124,15 @@
 \end{theorem}
 
 \begin{proof}
+    \leanok
     When $2^n \le i < 2^{n+1}$, then $i \oplus (2^{n+1} - 1) < 2^n$, so
     the sequence decreases.
 \end{proof}
 
 \begin{definition}
     \label{def:recursive_gray_code}
-    %\lean{recursive_gray_code}
+    \lean{recursive_gray_code}
+    \leanok
 
     \uses{thm:recursion_principle}
     There is a sequence $x$ that is a defined using $2^n \le i < 2^{n+1}$, $x_i = 2^n \oplus x_{(2^{n+1} - 1) \oplus i}$
@@ -137,7 +141,8 @@
 
 \begin{theorem}
     \label{thm:list_is_recursive}
-    %\lean{list_is_recursive}
+    \lean{list_is_recursive}
+    \leanok
     \uses{def:list_gray_code,def:recursive_gray_code}
 
     We can see that $x_i = L_n(i)$ for all $i < 2^n$. 
@@ -145,6 +150,7 @@
 
 \begin{proof}
     \uses{thm:recursion_principle,thm:list_is_stable}
+    \leanok
     We will prove this by showing that $L_n$ has the same induction property as $x$.
 
     Note that if $L_{n+1}$ is the $(n+1)$th list and $L_n$ is the $n$th list, $L_{n+1} = L_n \cdot (2^n \oplus \mathrm{reverse}(L_n))$. Thus
