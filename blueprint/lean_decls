@@ -10,3 +10,5 @@ list_is_stable
 binaryComplementRec
 recursive_gray_code
 list_is_recursive
+reverse_unit_step
+list_gray_code_unit_step
