@@ -349,5 +349,18 @@ lemma list_is_recursive (i n : ℕ) {h : i < (list_gray_code n).length} :
   · exact list_is_recursive_aux i
   exact Nat.lt_log2_self
 
+lemma next_to_comm (x y : ℕ) : next_to x y ↔ next_to y x := by
+  unfold next_to
+  simp_rw [eq_comm, Bool.xor_comm]
+
+lemma reverse_unit_step {α : Type*} [AddCommGroupWithOne α] (x : α → ℕ) (l : α) :
+  IsUnitStepSeq x → IsUnitStepSeq (fun i => x (l - i)) := by
+  unfold IsUnitStepSeq
+  intro h i
+  simp only
+  rw [next_to_comm]
+  convert h (l - (i + 1)) using 2
+  rw [<-sub_sub l i 1]
+  simp
 
 def hello := "world"
