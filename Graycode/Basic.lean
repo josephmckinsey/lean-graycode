@@ -161,10 +161,10 @@ info: true
 #guard_msgs in
 #eval Computable.next_to 4 5
 
-def IsUnitStepSeq {α : Type*} [AddGroupWithOne α] (x : α → ℕ) : Prop :=
+def IsUnitStepSeq {α : Type*} [AddGroup α] [One α] (x : α → ℕ) : Prop :=
   ∀i, next_to (x i) (x (i + 1))
 
-def IsGrayCode {α : Type*} [AddGroupWithOne α] (x : α → ℕ) : Prop :=
+def IsGrayCode {α : Type*} [AddGroup α] [One α] (x : α → ℕ) : Prop :=
   IsUnitStepSeq x ∧ Function.Injective x
 
 def list_gray_code : ℕ → List ℕ
@@ -353,7 +353,20 @@ lemma next_to_comm (x y : ℕ) : next_to x y ↔ next_to y x := by
   unfold next_to
   simp_rw [eq_comm, Bool.xor_comm]
 
-lemma reverse_unit_step {α : Type*} [AddCommGroupWithOne α] (x : α → ℕ) (l : α) :
+@[simp, grind =]
+lemma next_to_xor_right (x y z : ℕ) :
+  next_to (x ^^^ z) (y ^^^ z) ↔ next_to x y := by
+  simp only [next_to_xor_two_pow]
+  rw [show (x ^^^ z) ^^^ (y ^^^ z) = x ^^^ y by grind]
+
+@[simp, grind =]
+lemma next_to_xor_left (x y z : ℕ) :
+  next_to (z ^^^ x) (z ^^^ y) ↔ next_to x y := by
+  rw [Nat.xor_comm z x, Nat.xor_comm z y]
+  exact next_to_xor_right x y z
+
+
+lemma reverse_unit_step {α : Type*} [AddCommGroup α] [One α] (x : α → ℕ) (l : α) :
   IsUnitStepSeq x → IsUnitStepSeq (fun i => x (l - i)) := by
   unfold IsUnitStepSeq
   intro h i
@@ -362,5 +375,153 @@ lemma reverse_unit_step {α : Type*} [AddCommGroupWithOne α] (x : α → ℕ) (
   convert h (l - (i + 1)) using 2
   rw [<-sub_sub l i 1]
   simp
+
+
+#check (2 : Fin 3) + (4 : ℕ)
+
+example (n : ℕ) [NeZero n] (i : ℕ) :
+  (((2 : Fin n) ^ i) : Fin n) = 2^(i : ℕ) := by
+  simp
+
+/-
+    Each list $L_n$ is a unit step sequence on $\mathbb{Z} / 2^n \mathbb{Z}$.
+
+Proof
+    It is obviously true for $n = 0$.
+
+    By the stability property, $L_{n+1}$ is a unit step sequence for $i, i+1 < 2^n$.
+
+    Since the reverse of a unit step sequence is a unit step sequence, then for
+    $2^n \le i, i+1 < 2^{n+1}$, $L_{n+1}$ is a unit step sequence there as well.
+
+    When $i = 2^n - 1$, then $L_{n+1}(2^n - 1) = L_{n}(2^n - 1)$ and
+    $L_{n+1}(2^n) = 2^n \oplus L_{n}(2^n - 1)$,
+    so thus $L_{n+1}(2^n - 1) \oplus L_{n+1}(2^n) = 2^n$ and they are next to each other.
+
+    When $i = 2^{n+1} - 1$, then $L_{n+1}(2^{n+1} - 1) = 2^n \oplus L_{n}(0) = L_{n+1}(0)$
+    so thus they are next to each other.
+-/
+
+@[simp]
+lemma recursive_gray_code_zero :
+  recursive_gray_code 0 = 0 := by simp [recursive_gray_code, binaryComplementRec]
+
+@[simp, grind =]
+lemma gray_code_at_two_pow_minus_one (m : ℕ) :
+  recursive_gray_code (2 ^ (m+1) - 1) = 2^m := by
+  rw [recursive_gray_code_eq]
+  · have : (2^(m+1) - 1).log2 = m := by
+      rw [Nat.log2_eq_log_two]
+      apply Nat.log_eq_of_pow_le_of_lt_pow
+      · grind
+      apply Nat.sub_lt (Nat.two_pow_pos (m + 1)) (by norm_num)
+    rw [this]
+    simp [recursive_gray_code_zero]
+  simp [ne_of_gt]
+
+lemma gray_code_at_two_pow_minus_one' (m : ℕ) :
+  recursive_gray_code (2 ^ m - 1) = 2^m / 2 := by
+  rcases Nat.eq_zero_or_eq_sub_one_add_one (n := m) with h | h
+  · rw [h]; simp
+  rw [h]; grind
+
+lemma complement_xor_two_pow (m : ℕ) : 2 ^ (m + 1) - 1 ^^^ 2 ^ m = 2^m - 1 := by
+  apply Nat.eq_of_testBit_eq
+  intro i
+  rcases (show i < m ∨ i = m ∨ m < i by grind only) with h | h | h
+  · simp only [Nat.testBit_xor, Nat.testBit_two_pow_sub_one, h, decide_true, bne_iff_ne, ne_eq]
+    grind
+  · simp [h]
+  simp only [Nat.testBit_xor, Nat.testBit_two_pow_sub_one]
+  rw [decide_eq_false, decide_eq_false]
+  · grind
+  · exact Nat.not_lt_of_gt h
+  exact Nat.not_lt.mpr h
+
+lemma gray_code_at_two_pow (m : ℕ) :
+  recursive_gray_code (2 ^ m) = 2^m ^^^ 2^m / 2 := by
+  rw [recursive_gray_code_eq (nezero := by positivity)]
+  simp only [Nat.log2_two_pow, complement_xor_two_pow]
+  rw [gray_code_at_two_pow_minus_one']
+
+lemma gray_code_at_two_pow' (m : ℕ) :
+  recursive_gray_code (2 ^ (m+1)) = 2^(m+1) ^^^ 2^m := by
+  rw [gray_code_at_two_pow]
+  grind
+
+-- Rewriting through Fin is touchy
+lemma list_gray_code_unit_step (n : ℕ) :
+  IsUnitStepSeq (fun (i : Fin (2 ^ (n+1))) => (list_gray_code (n+1))[i]) := by
+  induction n
+  · intro i
+    simp [list_gray_code]
+    fin_cases i <;> { simp [next_to_xor_two_pow, Nat.isPowerOfTwo]; use 0; simp }
+  next n nh =>
+    set m := n + 1 with m_def
+    rintro ⟨i, ih⟩
+    dsimp
+    have four_cases : i+1 < 2^m ∨ i = 2^m - 1 ∨ 2^m ≤ i ∧ i + 1 < 2^(m+1) ∨ i = 2^(m+1) - 1 := by
+      grind -- also omega would work
+    rcases four_cases with h' | h' | ⟨h1, h2⟩ | h'
+    · have fin_val1 : Fin.val (⟨i, ih⟩ + 1) = i + 1 := by
+        rw [Fin.val_add_one_of_lt']
+        simp; grind
+      simp_rw [fin_val1]
+      --have : i + 1 < 2 ^ (m+1) := by grind
+      rw [list_is_stable (n := (m+1)) (m := m) (i := (i + 1))
+        (h := by simp; grind) (h' := by assumption)]
+      rw [list_is_stable (n := (m+1)) (m := m) (i := i) (h := by simpa) (h' := by linarith)]
+      have : i < 2 ^ m := by linarith
+      convert nh ⟨i, this⟩
+      have fin_val2 : Fin.val (⟨i, this⟩ + 1) = i + 1 := by
+        rw [Fin.val_add_one_of_lt']
+        simpa
+      simp only [Fin.getElem_fin]
+      simp_rw [fin_val2]
+    · have fin_val1 : Fin.val (⟨i, ih⟩ + 1) = i + 1 := by
+        rw [Fin.val_add_one_of_lt']
+        simp; grind
+      simp_rw [fin_val1]
+      simp_rw [h']
+      rw [list_is_recursive, gray_code_at_two_pow_minus_one, list_is_recursive]
+      rw [show 2^m - 1 + 1 = 2^m by grind, gray_code_at_two_pow', next_to_xor_two_pow]
+      use (n+1)
+      grind
+    · have fin_val1 : Fin.val (⟨i, ih⟩ + 1) = i + 1 := by
+        rw [Fin.val_add_one_of_lt']
+        simp; grind
+      simp_rw [fin_val1]
+      have : ∀i, (ih : 2^m ≤ i ∧ i < 2^(m+1)) → (list_gray_code (m + 1))[i]'(by simp; exact ih.2)
+        = 2^m ^^^ (list_gray_code m)[2^(m+1) - 1 - i]'(by grind) := by
+        intro i ih
+        simp_rw [list_gray_code]
+        rw [List.getElem_append_right (by simp_all)]
+        rw [List.getElem_map, List.getElem_reverse]
+        simp_rw [list_gray_code_length]
+        congr 2
+        grind
+      rw [this _ (by grind), this _ (by grind)]
+      rw [next_to_xor_left]
+      simp_rw [show 2^(m+1) - 1 - (i + 1) = 2^(m+1) - 1 - i - 1 from rfl]
+      rw [next_to_comm]
+      have : (2^(m+1) - 1 - i - 1) < 2^m := by grind
+      convert nh ⟨2^(m+1) - 1 - i - 1, this⟩
+      dsimp
+      congr 1
+      have fin_val2 : Fin.val (⟨2^(m+1) - 1 - i - 1, this⟩ + 1) = 2^(m+1) - 1 - i - 1 + 1 := by
+        rw [Fin.val_add_one_of_lt']
+        grind
+      simp_rw [fin_val2]
+      grind
+    have fin_val1 : Fin.val (⟨i, ih⟩ + 1) = 0 := by
+      simp_rw [h']
+      rw [Fin.val_add_eq_ite]
+      rw [if_pos]
+      · simp; grind
+      simp; grind
+    simp_rw [fin_val1, h']
+    simp [list_is_recursive, next_to_xor_two_pow]
+    use m
+
 
 def hello := "world"

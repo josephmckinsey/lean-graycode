@@ -170,8 +170,9 @@
     \label{thm:reverse_unit_step}
     \uses{def:unit_step_sequence}
     \lean{reverse_unit_step}
-    The reverse of a unit step list is also a unit step sequence.
     \leanok
+
+    The reverse of a unit step list is also a unit step sequence.
 \end{lemma}
 
 \begin{proof}
@@ -181,13 +182,15 @@
 
 \begin{theorem}
     \label{thm:list_gray_code_unit_step}
-    %\lean{list_gray_code_unit_step}
     \uses{def:list_gray_code,def:unit_step_sequence}
+    \lean{list_gray_code_unit_step}
+    \leanok
 
     Each list $L_n$ is a unit step sequence on $\mathbb{Z} / 2^n \mathbb{Z}$.
 \end{theorem}
 
 \begin{proof}
+    \leanok
     \uses{thm:next_to_xor_two_pow,thm:reverse_unit_step,thm:list_is_stable}
     It is obviously true for $n = 0$.
 
