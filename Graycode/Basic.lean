@@ -56,8 +56,7 @@ so thus $(x-1)_i = 1$. Thus $x \& (x - 1) \neq 0$.
     This occurs iff $(x \oplus y) = (x)_i \oplus (y)_i = 1$ only for $i$.
     $(x \oplus y)_i$ for only $i$ iff $(x \oplus y) = 2^i$.
 -/
-lemma next_to_xor_two_pow (x y : ℕ) :
-  next_to x y ↔ (x ^^^ y).isPowerOfTwo := by
+lemma next_to_xor_two_pow (x y : ℕ) : next_to x y ↔ (x ^^^ y).isPowerOfTwo := by
   rw [show next_to x y ↔ ∃ j, (x ^^^ y).testBit j ∧ ∀k ≠ j, ¬(x ^^^ y).testBit k by
     simp [next_to]]
   apply exists_congr
@@ -75,7 +74,7 @@ lemma next_to_xor_two_pow (x y : ℕ) :
     rw [Nat.testBit_two_pow_of_ne (by grind)]
 
 lemma nat_is_zero_or_between_two_pow (i : ℕ) :
-  i = 0 ∨ ∃n, 2^n ≤ i ∧ i < 2^(n+1) := by
+    i = 0 ∨ ∃n, 2^n ≤ i ∧ i < 2^(n+1) := by
   by_cases i = 0
   · left; assumption
   right
@@ -85,7 +84,7 @@ lemma nat_is_zero_or_between_two_pow (i : ℕ) :
   exact Nat.lt_log2_self
 
 lemma nat_is_zero_two_pow_or_between_two_pow (i : ℕ) :
-  i = 0 ∨ (∃n, i = 2^n) ∨  ∃n, 2^n < i ∧ i < 2^(n+1) := by
+    i = 0 ∨ (∃n, i = 2^n) ∨  ∃n, 2^n < i ∧ i < 2^(n+1) := by
   rcases (nat_is_zero_or_between_two_pow i) with h | ⟨n, h⟩
   · left; assumption
   right
@@ -94,7 +93,7 @@ lemma nat_is_zero_two_pow_or_between_two_pow (i : ℕ) :
   left; use n
 
 lemma order_two_pow_testBit_true (x n : ℕ) (h1 : 2 ^ n ≤ x) (h2 : x < 2 ^ (n + 1)) :
-  x.testBit n = true := by
+    x.testBit n = true := by
   have : x >>> n = 1 := by
     rw [Nat.shiftRight_eq_div_pow]
     apply Nat.div_eq_of_lt_le
@@ -105,7 +104,7 @@ lemma order_two_pow_testBit_true (x n : ℕ) (h1 : 2 ^ n ≤ x) (h2 : x < 2 ^ (n
   simp [this]
 
 lemma bitwise_test_power_of_two (x : ℕ) (nezero : x ≠ 0) :
-  x &&& (x - 1) = 0 ↔ x.isPowerOfTwo := by
+    x &&& (x - 1) = 0 ↔ x.isPowerOfTwo := by
   rcases nat_is_zero_two_pow_or_between_two_pow x with _ | ⟨n, h⟩ | ⟨n, h⟩
   · contradiction
   · simp [Nat.isPowerOfTwo, h]
@@ -132,7 +131,7 @@ def Computable.next_to (x y : ℕ) : Bool :=
   else diff &&& (diff - 1) == 0
 
 lemma computable_next_to_correct (x y : ℕ) :
-  next_to x y ↔ Computable.next_to x y := by
+    next_to x y ↔ Computable.next_to x y := by
   unfold Computable.next_to
   rw [next_to_xor_two_pow]
   if h : x ^^^ y = 0 then
@@ -191,25 +190,24 @@ info: true
 #eval is_list_gray_code (list_gray_code 5)
 
 @[simp, grind =]
-lemma list_gray_code_length (n : ℕ) :
-  (list_gray_code n).length = 2^n := by
+lemma list_gray_code_length (n : ℕ) : (list_gray_code n).length = 2^n := by
   fun_induction list_gray_code n with
   | case1 => rfl
   | case2 n h => simp [h]; ring
 
 lemma list_is_stable_once (n : ℕ) (i : ℕ) (h : i < 2 ^ n) :
-  (list_gray_code n)[i]'(by simp [h]) = (list_gray_code (n+1))[i]'(by grind) := by
+    (list_gray_code n)[i]'(by simp [h]) = (list_gray_code (n+1))[i]'(by grind) := by
   have := list_gray_code.eq_2 n
   simp only [Nat.succ_eq_add_one, List.map_reverse] at this
   simp_rw [this]
   rw [List.getElem_append_left']
 
 lemma list_is_stable' (n : ℕ) (i : ℕ) (h : i < 2 ^ n) (m : ℕ) (h' : n ≤ m) :
-  (list_gray_code n)[i]'(by simp [h]) = (list_gray_code m)[i]'(by
-    rw [list_gray_code_length]
-    suffices 2^n ≤ 2^m by linarith
-    apply Nat.pow_le_pow_right (by simp) (by assumption)
-  ) := by
+    (list_gray_code n)[i]'(by simp [h]) = (list_gray_code m)[i]'(by
+      rw [list_gray_code_length]
+      suffices 2^n ≤ 2^m by linarith
+      apply Nat.pow_le_pow_right (by simp) (by assumption)
+    ) := by
   induction m, h' using Nat.le_induction with
   | base => rfl
   | succ k kh h' =>
@@ -219,10 +217,10 @@ lemma list_is_stable' (n : ℕ) (i : ℕ) (h : i < 2 ^ n) (m : ℕ) (h' : n ≤ 
     apply Nat.pow_le_pow_right (by simp) (by assumption)
 
 lemma list_is_stable (n : ℕ) (i : ℕ) {h : i < (list_gray_code n).length} (m : ℕ) (h' : i < 2 ^ m) :
-  (list_gray_code n)[i]'h = (list_gray_code m)[i]'(by
-    rw [list_gray_code_length]
-    assumption
-  ) := by
+    (list_gray_code n)[i]'h = (list_gray_code m)[i]'(by
+      rw [list_gray_code_length]
+      assumption
+    ) := by
   wlog n_le_m : n ≤ m generalizing n m
   · have m_le_n : m ≤ n := Nat.le_of_not_ge n_le_m
     exact Eq.symm (list_is_stable' m i h' n m_le_n)
@@ -231,7 +229,7 @@ lemma list_is_stable (n : ℕ) (i : ℕ) {h : i < (list_gray_code n).length} (m 
   exact n_le_m
 
 lemma complement_is_smaller (i n : ℕ) (h : 2 ^ n ≤ i ∧ i < 2 ^ (n + 1)) :
-  2 ^ (n + 1) - 1 ^^^ i < 2^n := by
+    2 ^ (n + 1) - 1 ^^^ i < 2^n := by
   apply Nat.lt_pow_two_of_testBit
   intro j jh
   rcases lt_or_eq_of_le jh with h' | h'
@@ -245,8 +243,7 @@ lemma complement_is_smaller (i n : ℕ) (h : 2 ^ n ≤ i ∧ i < 2 ^ (n + 1)) :
     exact order_two_pow_testBit_true i n h.1 h.2
   simp [<-h', this]
 
-lemma Nat.log2_eq (i n : ℕ) (nezero : i ≠ 0) :
-  2^n ≤ i ∧ i < 2^(n+1) ↔ i.log2 = n:= by
+lemma Nat.log2_eq (i n : ℕ) (nezero : i ≠ 0) : 2^n ≤ i ∧ i < 2^(n+1) ↔ i.log2 = n:= by
   rw [Nat.log2_eq_log_two, Nat.log_eq_iff]
   simp [nezero]
 
@@ -282,8 +279,7 @@ info: true
 #guard_msgs in
 #eval (List.range (2^5)).all (fun i ↦ recursive_gray_code i == (list_gray_code 5)[i]!)
 
-lemma Nat.two_pow_xor_eq {x n : ℕ} (h : x < 2 ^ n) :
-  2 ^ n - 1 ^^^ x = 2 ^ n - 1 - x := by
+lemma Nat.two_pow_xor_eq {x n : ℕ} (h : x < 2 ^ n) : 2 ^ n - 1 ^^^ x = 2 ^ n - 1 - x := by
   rw [show 2^n - 1 - x = 2^n - (x + 1) by omega]
   apply Nat.eq_of_testBit_eq
   intro i
@@ -309,8 +305,7 @@ def list_gray_code_i (i : ℕ) :=
   )
 
 
-lemma list_is_recursive_aux (i : ℕ) :
-  list_gray_code_i i = recursive_gray_code i := by
+lemma list_is_recursive_aux (i : ℕ) : list_gray_code_i i = recursive_gray_code i := by
   induction i using binaryComplementRec with
   | zero => simp [list_gray_code_i, recursive_gray_code, list_gray_code, binaryComplementRec]
   | two_pow i ih complement =>
@@ -335,8 +330,7 @@ lemma list_is_recursive_aux (i : ℕ) :
     exact Nat.ne_zero_of_lt ih
 
 @[simp]
-lemma list_gray_code_zero (n : ℕ) :
-  (list_gray_code n)[0] = 0 := by
+lemma list_gray_code_zero (n : ℕ) : (list_gray_code n)[0] = 0 := by
   induction n with
   | zero => simp [list_gray_code]
   | succ n nh =>
@@ -344,7 +338,7 @@ lemma list_gray_code_zero (n : ℕ) :
     simp [nh]
 
 lemma list_is_recursive (i n : ℕ) {h : i < (list_gray_code n).length} :
-  (list_gray_code n)[i] = recursive_gray_code i := by
+    (list_gray_code n)[i] = recursive_gray_code i := by
   rw [list_is_stable (n := n) (i := i) (m := i.log2 + 1)]
   · exact list_is_recursive_aux i
   exact Nat.lt_log2_self
@@ -355,19 +349,18 @@ lemma next_to_comm (x y : ℕ) : next_to x y ↔ next_to y x := by
 
 @[simp, grind =]
 lemma next_to_xor_right (x y z : ℕ) :
-  next_to (x ^^^ z) (y ^^^ z) ↔ next_to x y := by
+    next_to (x ^^^ z) (y ^^^ z) ↔ next_to x y := by
   simp only [next_to_xor_two_pow]
   rw [show (x ^^^ z) ^^^ (y ^^^ z) = x ^^^ y by grind]
 
 @[simp, grind =]
-lemma next_to_xor_left (x y z : ℕ) :
-  next_to (z ^^^ x) (z ^^^ y) ↔ next_to x y := by
+lemma next_to_xor_left (x y z : ℕ) : next_to (z ^^^ x) (z ^^^ y) ↔ next_to x y := by
   rw [Nat.xor_comm z x, Nat.xor_comm z y]
   exact next_to_xor_right x y z
 
 
 lemma reverse_unit_step {α : Type*} [AddCommGroup α] [One α] (x : α → ℕ) (l : α) :
-  IsUnitStepSeq x → IsUnitStepSeq (fun i => x (l - i)) := by
+    IsUnitStepSeq x → IsUnitStepSeq (fun i => x (l - i)) := by
   unfold IsUnitStepSeq
   intro h i
   simp only
@@ -380,7 +373,7 @@ lemma reverse_unit_step {α : Type*} [AddCommGroup α] [One α] (x : α → ℕ)
 #check (2 : Fin 3) + (4 : ℕ)
 
 example (n : ℕ) [NeZero n] (i : ℕ) :
-  (((2 : Fin n) ^ i) : Fin n) = 2^(i : ℕ) := by
+    (((2 : Fin n) ^ i) : Fin n) = 2^(i : ℕ) := by
   simp
 
 /-
@@ -403,12 +396,12 @@ Proof
 -/
 
 @[simp]
-lemma recursive_gray_code_zero :
-  recursive_gray_code 0 = 0 := by simp [recursive_gray_code, binaryComplementRec]
+lemma recursive_gray_code_zero : recursive_gray_code 0 = 0 := by
+  simp [recursive_gray_code, binaryComplementRec]
 
 @[simp, grind =]
 lemma gray_code_at_two_pow_minus_one (m : ℕ) :
-  recursive_gray_code (2 ^ (m+1) - 1) = 2^m := by
+    recursive_gray_code (2 ^ (m+1) - 1) = 2^m := by
   rw [recursive_gray_code_eq]
   · have : (2^(m+1) - 1).log2 = m := by
       rw [Nat.log2_eq_log_two]
@@ -420,7 +413,7 @@ lemma gray_code_at_two_pow_minus_one (m : ℕ) :
   simp [ne_of_gt]
 
 lemma gray_code_at_two_pow_minus_one' (m : ℕ) :
-  recursive_gray_code (2 ^ m - 1) = 2^m / 2 := by
+    recursive_gray_code (2 ^ m - 1) = 2^m / 2 := by
   rcases Nat.eq_zero_or_eq_sub_one_add_one (n := m) with h | h
   · rw [h]; simp
   rw [h]; grind
@@ -439,19 +432,19 @@ lemma complement_xor_two_pow (m : ℕ) : 2 ^ (m + 1) - 1 ^^^ 2 ^ m = 2^m - 1 := 
   exact Nat.not_lt.mpr h
 
 lemma gray_code_at_two_pow (m : ℕ) :
-  recursive_gray_code (2 ^ m) = 2^m ^^^ 2^m / 2 := by
+    recursive_gray_code (2 ^ m) = 2^m ^^^ 2^m / 2 := by
   rw [recursive_gray_code_eq (nezero := by positivity)]
   simp only [Nat.log2_two_pow, complement_xor_two_pow]
   rw [gray_code_at_two_pow_minus_one']
 
 lemma gray_code_at_two_pow' (m : ℕ) :
-  recursive_gray_code (2 ^ (m+1)) = 2^(m+1) ^^^ 2^m := by
+    recursive_gray_code (2 ^ (m+1)) = 2^(m+1) ^^^ 2^m := by
   rw [gray_code_at_two_pow]
   grind
 
 -- Rewriting through Fin is touchy
 lemma list_gray_code_unit_step (n : ℕ) :
-  IsUnitStepSeq (fun (i : Fin (2 ^ (n+1))) => (list_gray_code (n+1))[i]) := by
+    IsUnitStepSeq (fun (i : Fin (2 ^ (n+1))) => (list_gray_code (n+1))[i]) := by
   induction n
   · intro i
     simp [list_gray_code]
@@ -550,11 +543,21 @@ info: true
 #eval (List.range (2^5)).all (fun i ↦ direct_gray_code i == (list_gray_code 5)[i]!)
 
 theorem direct_is_xor_homomorphism (i j : ℕ) :
-  direct_gray_code (i ^^^ j) = direct_gray_code i ^^^ direct_gray_code j := by
+    direct_gray_code (i ^^^ j) = direct_gray_code i ^^^ direct_gray_code j := by
   unfold direct_gray_code
   grind
 
+@[simp]
+lemma direct_gray_code_zero : direct_gray_code 0 = 0 := by rfl
+
 theorem direct_is_recursive (i : ℕ) :
-  direct_gray_code i = recursive_gray_code i := by sorry
+    direct_gray_code i = recursive_gray_code i := by
+  induction i using binaryComplementRec with
+  | zero => simp
+  | two_pow i ih complement =>
+    rw [recursive_gray_code_eq (by grind)]
+    rw [<-complement]
+    unfold direct_gray_code
+    sorry
 
 def hello := "world"
