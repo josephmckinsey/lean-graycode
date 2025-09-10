@@ -161,10 +161,10 @@ info: true
 #guard_msgs in
 #eval Computable.next_to 4 5
 
-def IsUnitStepSeq {α : Type*} [AddGroup α] [One α] (x : α → ℕ) : Prop :=
+def IsUnitStepSeq {α : Type*} [AddMonoid α] [One α] (x : α → ℕ) : Prop :=
   ∀i, next_to (x i) (x (i + 1))
 
-def IsGrayCode {α : Type*} [AddGroup α] [One α] (x : α → ℕ) : Prop :=
+def IsGrayCode {α : Type*} [AddMonoid α] [One α] (x : α → ℕ) : Prop :=
   IsUnitStepSeq x ∧ Function.Injective x
 
 def list_gray_code : ℕ → List ℕ
@@ -523,5 +523,38 @@ lemma list_gray_code_unit_step (n : ℕ) :
     simp [list_is_recursive, next_to_xor_two_pow]
     use m
 
+theorem recursive_gray_code_unit_step : IsUnitStepSeq recursive_gray_code := by
+  have ih :∀i, i < 2^(i+1) := by
+    intro i
+    apply lt_trans (b := 2^i)
+    · exact Nat.lt_two_pow_self
+    apply Nat.pow_lt_pow_succ (by norm_num)
+  intro i
+  rw [<-list_is_recursive (n := i + 1)]
+  · rw [<-list_is_recursive (n := i)] -- not sure why this is incrementing i...
+    · have := list_gray_code_unit_step (n := i) ⟨i, ih i⟩
+      dsimp at this
+      have fin_val1 : Fin.val (⟨i, ih i⟩ + 1) = i + 1 := by
+        rw [Fin.val_add_one_of_lt']
+        exact Nat.lt_two_pow_self
+      simp_rw [fin_val1] at this
+      convert this -- exact and apply didn't work???
+    simp [Nat.lt_two_pow_self]
+
+def direct_gray_code (n : ℕ) : ℕ := n ^^^ (n >>> 1)
+
+/--
+info: true
+-/
+#guard_msgs in
+#eval (List.range (2^5)).all (fun i ↦ direct_gray_code i == (list_gray_code 5)[i]!)
+
+theorem direct_is_xor_homomorphism (i j : ℕ) :
+  direct_gray_code (i ^^^ j) = direct_gray_code i ^^^ direct_gray_code j := by
+  unfold direct_gray_code
+  grind
+
+theorem direct_is_recursive (i : ℕ) :
+  direct_gray_code i = recursive_gray_code i := by sorry
 
 def hello := "world"

@@ -207,7 +207,8 @@
 
 \begin{theorem}
     \label{thm:recursive_gray_code_unit_step}
-    %\lean{recursive_gray_code_unit_step}
+    \lean{recursive_gray_code_unit_step}
+    \leanok
 
     \uses{def:recursive_gray_code}
 
@@ -216,32 +217,37 @@
 
 \begin{proof}
     \uses{thm:list_gray_code_unit_step,thm:list_is_recursive}
+    \leanok
     Trivial application of the previous theorem.
 \end{proof}
 
 \begin{definition}
     \label{def:direct_gray_code}
-    %\lean{direct_gray_code}
+    \lean{direct_gray_code}
+    \leanok
     We can also construct the same Gray code simply by doing $n \oplus (n >>> 1)$.
 \end{definition}
 
 \begin{theorem}
     \label{thm:direct_is_xor_homomorphism}
-
     \uses{def:direct_gray_code}
+    \lean{direct_is_xor_homomorphism}
+    \leanok
     From the direct gray code, it is obvious that $f(i \oplus j) = f(i) \oplus f(j)$.
 \end{theorem}
 
 \begin{proof}
+    \leanok
     Trivial.
 \end{proof}
 
 \begin{theorem}
-    \label{def:direct_is_recursive}
-    %\lean{direct_is_recursive}
+    \label{thm:direct_is_recursive}
     \uses{def:unit_step_sequence,def:recursive_gray_code,def:direct_gray_code}
+    \lean{direct_is_recursive}
+    \leanok
 
-    This is eqvuivalent to the recursive definition.
+    This is equivalent to the recursive definition.
 \end{theorem}
 
 \begin{proof}

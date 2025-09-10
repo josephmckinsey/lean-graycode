@@ -12,3 +12,7 @@ recursive_gray_code
 list_is_recursive
 reverse_unit_step
 list_gray_code_unit_step
+recursive_gray_code_unit_step
+direct_gray_code
+direct_is_xor_homomorphism
+direct_is_recursive
