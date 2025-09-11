@@ -16,3 +16,4 @@ recursive_gray_code_unit_step
 direct_gray_code
 direct_is_xor_homomorphism
 direct_is_recursive
+recursive_inverse
