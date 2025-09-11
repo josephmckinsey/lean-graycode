@@ -250,7 +250,7 @@ lemma Nat.log2_eq (i n : ℕ) (nezero : i ≠ 0) : 2^n ≤ i ∧ i < 2^(n+1) ↔
 universe u in
 @[elab_as_elim, specialize]
 def binaryComplementRec {motive : Nat → Sort u} (zero : motive 0)
-  (two_pow : ∀ i, i > 0 → motive ((2 ^ (i.log2 + 1) - 1) ^^^ i) → motive i)
+    (two_pow : ∀ i, i > 0 → motive ((2 ^ (i.log2 + 1) - 1) ^^^ i) → motive i)
     (n : Nat) : motive n :=
   if n0 : n = 0 then congrArg motive n0 ▸ zero
   else
@@ -550,6 +550,15 @@ theorem direct_is_xor_homomorphism (i j : ℕ) :
 @[simp]
 lemma direct_gray_code_zero : direct_gray_code 0 = 0 := by rfl
 
+lemma Nat.shiftRight_two_pow_sub_one (n m : ℕ) : (2^(n+m) - 1) >>> m = 2^n - 1 :=
+  Nat.eq_of_testBit_eq fun i => by simp; grind
+
+lemma Nat.two_pow_sub_one_xor_add_one (n : ℕ) : (2^n - 1) ^^^ (2^(n + 1) - 1) = 2^n :=
+  Nat.eq_of_testBit_eq fun i => by
+    rw [Nat.testBit_xor, Nat.testBit_two_pow,
+      Nat.testBit_two_pow_sub_one, Nat.testBit_two_pow_sub_one]
+    grind
+
 theorem direct_is_recursive (i : ℕ) :
     direct_gray_code i = recursive_gray_code i := by
   induction i using binaryComplementRec with
@@ -558,6 +567,68 @@ theorem direct_is_recursive (i : ℕ) :
     rw [recursive_gray_code_eq (by grind)]
     rw [<-complement]
     unfold direct_gray_code
-    sorry
+    have : (2 ^ (i.log2 + 1) - 1 ^^^ i ^^^ (2 ^ (i.log2 + 1) - 1 ^^^ i) >>> 1) =
+      2^i.log2 ^^^ i ^^^ i >>> 1 := by
+      rw [Nat.shiftRight_xor_distrib]
+      rw [Nat.shiftRight_two_pow_sub_one]
+      rw [Nat.xor_assoc, Nat.xor_assoc, <-Nat.xor_assoc i, Nat.xor_comm i, Nat.xor_assoc]
+      rw [<-Nat.xor_assoc, Nat.xor_left_inj, Nat.xor_comm]
+      exact Nat.two_pow_sub_one_xor_add_one i.log2
+    rw [this, <-Nat.xor_assoc, <- Nat.xor_assoc]
+    simp
+
+lemma Nat.xor_two_pow_log2 (n : ℕ) (nezero : n ≠ 0) : n ^^^ 2^n.log2 = n - 2^n.log2 :=
+  Nat.eq_of_testBit_eq fun i => by
+    have : 2^n.log2 ≤ n := log2_self_le nezero
+    rcases (by grind : i < n.log2 ∨ i = n.log2 ∨ n.log2 < i) with h | h | h
+    · set m := n - 2^n.log2 with m_def
+      have n_def : n = m + 2^n.log2 := (Nat.sub_eq_iff_eq_add this).mp rfl
+      nth_rw 1 [n_def]
+      rw [Nat.testBit_xor]
+      rw [Nat.add_comm, Nat.testBit_two_pow_add_gt h]
+      rw [Nat.testBit_two_pow_of_ne]
+      · simp
+      exact h.ne'
+    · set m := n - 2^n.log2 with m_def
+      have n_def : n = m + 2^n.log2 := (Nat.sub_eq_iff_eq_add this).mp rfl
+      nth_rw 1 [n_def]
+      rw [Nat.add_comm]
+      simp [h, Nat.testBit_two_pow_add_eq]
+    rw [Nat.testBit_lt_two_pow, Nat.testBit_lt_two_pow]
+    · exact sub_lt_of_lt ((log2_lt nezero).mp h)
+    exact Nat.xor_lt_two_pow ((log2_lt nezero).mp h)
+      (Nat.pow_lt_pow_right (by norm_num) h)
+
+universe u in
+@[elab_as_elim, specialize]
+def binaryBigEndianRec {motive : Nat → Sort u} (zero : motive 0)
+    (two_pow : ∀ i, i > 0 → motive (i ^^^ 2 ^ i.log2) → motive i)
+    (n : Nat) : motive n :=
+  if n0 : n = 0 then congrArg motive n0 ▸ zero
+  else
+    let descent := binaryBigEndianRec zero two_pow (n ^^^ 2^n.log2)
+    two_pow n (Nat.zero_lt_of_ne_zero n0) descent
+decreasing_by
+  rw [Nat.xor_two_pow_log2 n n0]
+  simp only [tsub_lt_self_iff, Nat.ofNat_pos, pow_pos, and_true, gt_iff_lt]
+  exact Nat.zero_lt_of_ne_zero n0
+
+def recursive_inverse : ℕ → ℕ :=
+  binaryBigEndianRec
+    (zero := (0 : ℕ))
+    (two_pow := fun i _ complement ↦ (2^(i.log2 + 1) - 1) ^^^ complement)
+
+
+/--
+info: true
+-/
+#guard_msgs in
+#eval (List.range (2^5)).all (fun i ↦ recursive_inverse (recursive_gray_code i) == i)
+
+/--
+info: true
+-/
+#guard_msgs in
+#eval (List.range (2^5)).all (fun i ↦ (recursive_gray_code (recursive_inverse i)) == i)
 
 def hello := "world"
