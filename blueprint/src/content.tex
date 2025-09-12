@@ -314,7 +314,8 @@
 
 \begin{definition}
     \label{def:computable_inverse}
-    %\lean{computable_inverse}
+    \lean{direct_inverse}
+    \leanok
     
     Let $m = n$. While $m > 0$, let $m := m >> 1$ and $n := n \oplus m$.
     At the end, $n$ will be equal to the inverse $y_i$.
@@ -324,7 +325,8 @@
 
 \begin{theorem}
     \label{thm:computable_inverse_is_equivalent}
-    %\lean{computable_inverse_is_equivalent}
+    \lean{direct_inverse_is_recursive_inverse}
+    \leanok
     \uses{def:recursive_inverse,def:computable_inverse}
 
     The above procedure is equivalent to the recursive definition of $y$.
@@ -332,6 +334,7 @@
 
 \begin{proof}
     \uses{thm:recursion_principle,def:recursive_gray_code,def:recursive_inverse}
+    \leanok
     Let the procedure be called $f$.
 
     Once again, we prove this by induction on $y$'s recursive principle. The base case is obvious.
@@ -345,11 +348,13 @@
     \label{thm:recursive_is_gray_code}
     \uses{def:recursive_gray_code,def:gray_code}
     The recursive sequence is a gray code.
+    \leanok
 \end{theorem}
 
 \begin{proof}
     \uses{thm:recursive_gray_code_unit_step,def:gray_code,thm:recursive_inverse_is_inverse}
-    Invertibility and unit step sequence 
+    \leanok
+    Injectivity and unit step sequence 
 \end{proof}
 
 \chapter{Some alternate proofs}
@@ -394,3 +399,9 @@
 
     This completes the proof.
 \end{proof}
+
+In general, we should be able to complete many of the proofs by considering $\mathbb{N}$ to
+be a group under $\oplus$. With this, proving that the kernel is $0$ is sufficient to prove
+injectivity, which is easier in the injective case. Instead of using induction for most things,
+we can also use the fact that $\{2^n\}_n$ and $\{2^(n+1) - 1\} each generate the group.
+I might try this approach if I were to dig in deeper.

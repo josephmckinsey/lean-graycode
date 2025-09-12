@@ -784,4 +784,59 @@ def equiv_gray_code : ℕ ≃ ℕ where
   left_inv := recursive_inverse_is_left_inverse
   right_inv := recursive_inverse_is_right_inverse
 
+theorem recursive_is_gray_code : IsGrayCode recursive_gray_code :=
+  ⟨recursive_gray_code_unit_step, recursive_inverse_is_left_inverse.injective⟩
+
+
+def direct_inverse (n : ℕ) : ℕ :=
+  if n = 0 then
+    0
+  else
+    n ^^^ direct_inverse (n >>> 1)
+
+/--
+info: true
+-/
+#guard_msgs in
+#eval (List.range (2^5)).all (fun i ↦ direct_inverse i == recursive_inverse i)
+
+@[simp]
+lemma direct_inverse_zero : direct_inverse 0 = 0 := by simp [direct_inverse]
+
+lemma Nat.shiftRight_two_pow (m n) : 2^(m+n) >>> n = 2^m := by
+  rw [Nat.shiftRight_eq_div_pow, Nat.pow_add]
+  rw [Nat.mul_div_cancel (H := by simp)]
+
+lemma direct_inverse_two_pow_eq (n : ℕ) : direct_inverse (2 ^ n) = 2 ^ (n + 1) - 1 := by
+  induction n with
+  | zero => simp [direct_inverse]
+  | succ n nh =>
+    rw [direct_inverse, if_neg (by positivity)]
+    rw [Nat.shiftRight_two_pow, nh, <-Nat.two_pow_add_one_sub_one_eq]
+
+lemma direct_inverse_xor_homomorphism (x y : ℕ) :
+  direct_inverse (x ^^^ y) = direct_inverse x ^^^ direct_inverse y := by
+  if h : x = 0 ∨ y = 0 then
+    rcases h with h | h
+    <;> simp [h]
+  else
+    rw [direct_inverse]
+    split_ifs
+    · have : x = y := by simp_all
+      simp [this]
+    rcases not_or.1 h with ⟨xnonneg, ynonneg⟩
+    rw [direct_inverse.eq_def x, if_neg xnonneg, direct_inverse.eq_def y, if_neg ynonneg]
+    rw [Nat.xor_assoc, Nat.xor_assoc, Nat.xor_right_inj, Nat.xor_comm (direct_inverse (x >>> 1))]
+    rw [Nat.xor_assoc, Nat.xor_right_inj, Nat.xor_comm (direct_inverse (y >>> 1))]
+    rw [Nat.shiftRight_xor_distrib]
+    apply direct_inverse_xor_homomorphism
+
+lemma direct_inverse_is_recursive_inverse (n : ℕ) : direct_inverse n = recursive_inverse n := by
+  induction n using binaryBigEndianRec with
+  | zero => simp
+  | two_pow n nh lower =>
+    rw [direct_inverse_xor_homomorphism, direct_inverse_two_pow_eq] at lower
+    rw [recursive_inverse_eq nh.ne']
+    rw [Nat.xor_comm, <-lower, Nat.xor_assoc, Nat.xor_self, Nat.xor_zero]
+
 def hello := "world"
