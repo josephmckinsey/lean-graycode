@@ -553,11 +553,14 @@ lemma direct_gray_code_zero : direct_gray_code 0 = 0 := by rfl
 lemma Nat.shiftRight_two_pow_sub_one (n m : ℕ) : (2^(n+m) - 1) >>> m = 2^n - 1 :=
   Nat.eq_of_testBit_eq fun i => by simp; grind
 
-lemma Nat.two_pow_sub_one_xor_add_one (n : ℕ) : (2^n - 1) ^^^ (2^(n + 1) - 1) = 2^n :=
-  Nat.eq_of_testBit_eq fun i => by
-    rw [Nat.testBit_xor, Nat.testBit_two_pow,
-      Nat.testBit_two_pow_sub_one, Nat.testBit_two_pow_sub_one]
+lemma Nat.two_pow_add_one_sub_one_eq (n : ℕ) : (2^(n + 1) - 1) = 2^n ^^^ (2^n - 1) :=
+  Nat.eq_of_testBit_eq fun i ↦ by
+    simp [Nat.testBit_two_pow]
     grind
+
+lemma Nat.two_pow_sub_one_xor_add_one (n : ℕ) : (2^n - 1) ^^^ (2^(n + 1) - 1) = 2^n := by
+  rw [Nat.two_pow_add_one_sub_one_eq, Nat.xor_comm (2^n), <-Nat.xor_assoc]
+  simp
 
 theorem direct_is_recursive (i : ℕ) :
     direct_gray_code i = recursive_gray_code i := by
@@ -577,7 +580,7 @@ theorem direct_is_recursive (i : ℕ) :
     rw [this, <-Nat.xor_assoc, <- Nat.xor_assoc]
     simp
 
-lemma Nat.xor_two_pow_log2 (n : ℕ) (nezero : n ≠ 0) : n ^^^ 2^n.log2 = n - 2^n.log2 :=
+lemma Nat.xor_two_pow_log2 {n : ℕ} (nezero : n ≠ 0) : n ^^^ 2^n.log2 = n - 2^n.log2 :=
   Nat.eq_of_testBit_eq fun i => by
     have : 2^n.log2 ≤ n := log2_self_le nezero
     rcases (by grind : i < n.log2 ∨ i = n.log2 ∨ n.log2 < i) with h | h | h
@@ -609,7 +612,7 @@ def binaryBigEndianRec {motive : Nat → Sort u} (zero : motive 0)
     let descent := binaryBigEndianRec zero two_pow (n ^^^ 2^n.log2)
     two_pow n (Nat.zero_lt_of_ne_zero n0) descent
 decreasing_by
-  rw [Nat.xor_two_pow_log2 n n0]
+  rw [Nat.xor_two_pow_log2 n0]
   simp only [tsub_lt_self_iff, Nat.ofNat_pos, pow_pos, and_true, gt_iff_lt]
   exact Nat.zero_lt_of_ne_zero n0
 
@@ -723,5 +726,62 @@ lemma recursive_inverse_is_left_inverse :
     rw [recursive_gray_code_eq ih.ne']
     rw [Nat.xor_comm (2^i.log2), Nat.xor_assoc, Nat.xor_self, Nat.xor_zero]
     rw [complement, Nat.xor_eq_iff]
+
+lemma recursive_inverse_lt_two_pow {i n : ℕ} (h : i < 2 ^ n) : recursive_inverse i < 2^n := by
+  induction i using binaryBigEndianRec with
+  | zero => simp
+  | two_pow i ih lower =>
+    rw [recursive_inverse_eq ih.ne']
+    apply Nat.xor_lt_two_pow
+    · apply Nat.sub_one_lt_of_le (by positivity)
+      apply Nat.pow_le_pow_right (by norm_num)
+      apply Nat.add_one_le_of_lt
+      rw [Nat.log2_lt ih.ne']
+      exact h
+    exact lower (by
+      apply lt_trans ?_ h
+      rw [Nat.xor_two_pow_log2 ih.ne']
+      simpa
+    )
+
+lemma le_recursive_inverse {n : ℕ} (h : n ≠ 0) : 2^n.log2 ≤ recursive_inverse n := by
+  rw [recursive_inverse_eq h]
+  rw [Nat.two_pow_add_one_sub_one_eq, Nat.xor_assoc]
+  rw [Nat.xor_two_pow_of_lt]
+  · simp
+  apply Nat.xor_lt_two_pow (by simp)
+  apply recursive_inverse_lt_two_pow
+  rw [Nat.xor_two_pow_log2 h]
+  have : n < 2^(n.log2 + 1) := Nat.lt_log2_self
+  grind
+
+lemma recursive_inverse_pos {n : ℕ} (h : 0 < n) : 0 < recursive_inverse n :=
+  lt_of_lt_of_le (Nat.two_pow_pos n.log2) (le_recursive_inverse h.ne')
+
+lemma log2_recursive_inverse (n : ℕ) : (recursive_inverse n).log2 = n.log2 := by
+  by_cases nezero : n = 0
+  · simp [nezero]
+  rw [<-Nat.log2_eq]
+  · constructor
+    · exact le_recursive_inverse nezero
+    exact recursive_inverse_lt_two_pow Nat.lt_log2_self
+  exact ne_of_gt (recursive_inverse_pos (Nat.zero_lt_of_ne_zero nezero))
+
+lemma recursive_inverse_is_right_inverse :
+    Function.RightInverse recursive_inverse recursive_gray_code := fun n ↦ by
+  induction n using binaryBigEndianRec with
+  | zero => simp
+  | two_pow i ih lower =>
+    rw [recursive_gray_code_eq (ne_of_gt (recursive_inverse_pos ih))]
+    rw [log2_recursive_inverse]
+    rw [recursive_inverse_eq ih.ne']
+    rw [<-Nat.xor_assoc, Nat.xor_self, Nat.zero_xor]
+    rw [lower, Nat.xor_eq_iff, Nat.xor_comm]
+
+def equiv_gray_code : ℕ ≃ ℕ where
+  toFun := recursive_gray_code
+  invFun := recursive_inverse
+  left_inv := recursive_inverse_is_left_inverse
+  right_inv := recursive_inverse_is_right_inverse
 
 def hello := "world"

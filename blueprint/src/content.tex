@@ -285,12 +285,14 @@
 
 \begin{theorem}
     \label{thm:recursive_inverse_is_inverse}
-    %\lean{recursive_inverse_is_inverse}
+    \lean{equiv_gray_code}
+    \leanok
     \uses{def:recursive_inverse,def:recursive_gray_code}
     Now we must prove that $y_{x_i} = x_{y_i} = i$.
 \end{theorem}
 
 \begin{proof}
+    \leanok
     \uses{thm:recursion_principle,def:recursive_gray_code,def:recursive_inverse}
     First, we'll show that $y_{x_{i}} = i$ by induction using $x$'s induction principle.
     When $i = 0$, $y_{x_0} = y_0 = 0$. If $2^n \le i < 2^{n+1}$, then $2^n \le x_i < 2^{n+1}$.

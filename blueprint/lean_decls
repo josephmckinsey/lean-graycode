@@ -17,3 +17,4 @@ direct_gray_code
 direct_is_xor_homomorphism
 direct_is_recursive
 recursive_inverse
+equiv_gray_code
