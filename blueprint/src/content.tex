@@ -361,10 +361,13 @@
 
 \begin{lemma}
     \label{thm:add_one_xor}
+    \lean{Nat.exists_xor_add_one_eq_two_pow}
+    \leanok
     Let $n$ be a natural number. Then $n \oplus (n+1) = 2^k - 1$ for some $0 < k$.
 \end{lemma}
 
 \begin{proof}
+    \leanok
     Suppose $n = 0$, then $0 ^^^ 1 = 1 = 2^2 - 1$, so $k = 2 > 0$.
 
     Here, we'll need $2 a \oplus 2 b = 2 (a \oplus b)$ as well as
@@ -382,11 +385,14 @@
 \begin{theorem}
     \label{thm:alternate_direct_gray_code_proof}
     \uses{def:direct_gray_code,def:unit_step_sequence}
+    \lean{alternate_direct_gray_code_proof}
+    \leanok
     From this, we have an alternate proof that $x \oplus (x >>> 1)$ is a unit step sequence.
 \end{theorem}
 
 \begin{proof}
     \uses{thm:add_one_xor}
+    \leanok
     Here we need that $2^k - 1 \oplus (2^k - 1) >>> 1 = 2^{k-1}$ for $k > 0$.
 
     Let $x \oplus (x+1) = 2^k - 1$, then

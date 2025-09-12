@@ -815,7 +815,7 @@ lemma direct_inverse_two_pow_eq (n : ℕ) : direct_inverse (2 ^ n) = 2 ^ (n + 1)
     rw [Nat.shiftRight_two_pow, nh, <-Nat.two_pow_add_one_sub_one_eq]
 
 lemma direct_inverse_xor_homomorphism (x y : ℕ) :
-  direct_inverse (x ^^^ y) = direct_inverse x ^^^ direct_inverse y := by
+    direct_inverse (x ^^^ y) = direct_inverse x ^^^ direct_inverse y := by
   if h : x = 0 ∨ y = 0 then
     rcases h with h | h
     <;> simp [h]
@@ -838,5 +838,75 @@ lemma direct_inverse_is_recursive_inverse (n : ℕ) : direct_inverse n = recursi
     rw [direct_inverse_xor_homomorphism, direct_inverse_two_pow_eq] at lower
     rw [recursive_inverse_eq nh.ne']
     rw [Nat.xor_comm, <-lower, Nat.xor_assoc, Nat.xor_self, Nat.xor_zero]
+
+lemma Nat.xor_mul_two_pow (a b n : ℕ) : (a ^^^ b) * 2^n = a * 2^n ^^^ b * 2^n :=
+  bitwise_mul_two_pow (f := Bool.xor) (x := a) (y := b) (n := n)
+
+lemma Nat.xor_mul_two (a b : ℕ) : (a ^^^ b) * 2 = a * 2 ^^^ b * 2 :=
+  Nat.xor_mul_two_pow a b 1
+
+lemma Nat.xor_two_add_one (a : ℕ) : (2 * a ^^^ 1) = 2 * a + 1 :=
+  Nat.eq_of_testBit_eq fun i ↦ by
+    rw [show 2 = 2^1 by rfl]
+    rw [Nat.testBit_two_pow_mul_add (b_lt := by simp)]
+    by_cases h : i = 0
+    · simp [h]
+    have : testBit 1 i = false := by
+      rw [Nat.testBit_one_eq_true_iff_self_eq_zero.symm.not, Bool.not_eq_true] at h
+      exact h
+    simp only [pow_one, testBit_xor, this, Bool.bne_false, lt_one_iff, h, ↓reduceIte]
+    rw [show 2 = 2^1 by rfl, Nat.testBit_two_pow_mul, decide_eq_true (one_le_iff_ne_zero.mpr h)]
+    simp
+
+/--
+Let $n$ be a natural number. Then $n \oplus (n+1) = 2^k - 1$ for some $0 < k$.
+-/
+lemma Nat.exists_xor_add_one_eq_two_pow (n : ℕ) : ∃k > 0, n ^^^ (n+1) = 2^k - 1 := by
+  induction n using Nat.binaryRec with
+  | z => use 1; simp
+  | f b n kh =>
+    rcases kh with ⟨k, kh, h⟩
+    have : 2*n ^^^ 2*(n+1) = 2 * (2^k - 1) := by
+      rw [mul_comm, mul_comm 2, mul_comm 2, <-Nat.xor_mul_two, h]
+    if h' : b then
+      rw [h', bit_true_apply]
+      use k+1, (Nat.add_pos_left kh 1)
+      rw [add_assoc, show 1 + 1 = 2 by rfl]
+      rw [<-Nat.xor_two_add_one, Nat.xor_comm _ 1, Nat.xor_assoc]
+      rw [mul_add, mul_one] at this
+      rw [this, Nat.xor_comm, Nat.xor_two_add_one]
+      rw [Nat.mul_sub, mul_one, <-Nat.pow_add_one']
+      have : 0 < 2^k := Nat.two_pow_pos k -- truly horrible to find that I needed this
+      grind
+    else
+      simp at h'
+      rw [h', bit_false_apply]
+      use 1
+      simp [<-Nat.xor_two_add_one, <-Nat.xor_assoc]
+
+/-
+    Here we need that $2^k - 1 \oplus (2^k - 1) >>> 1 = 2^{k-1}$ for $k > 0$.
+
+    Let $x \oplus (x+1) = 2^k - 1$, then
+    \begin{align*}
+        x \oplus (x >>> 1) \oplus (x + 1) \oplus (x + 1 >>> 1)
+        &= 2^k - 1 \oplus (x \oplus (x+1)) >>> 1 \\
+        &= 2^k - 1 \oplus (2^k - 1) >>> 1 \\
+        &= 2^{k - 1}
+    \end{align*}
+-/
+
+lemma alternate_direct_gray_code_proof : IsUnitStepSeq direct_gray_code := by
+  intro i
+  rw [next_to_xor_two_pow]
+  unfold direct_gray_code
+  rw [Nat.xor_comm i, Nat.xor_assoc, <-Nat.xor_assoc i]
+  have ⟨k, kh, h⟩ := Nat.exists_xor_add_one_eq_two_pow i
+  set l := k - 1 with l_def
+  rw [show k = l + 1 by grind] at h
+  rw [h, <-Nat.xor_assoc, Nat.xor_comm (i >>> 1), Nat.xor_assoc, <-Nat.shiftRight_xor_distrib]
+  rw [h, Nat.shiftRight_two_pow_sub_one, Nat.xor_comm, Nat.two_pow_sub_one_xor_add_one]
+  use l
+
 
 def hello := "world"

@@ -20,3 +20,5 @@ recursive_inverse
 equiv_gray_code
 direct_inverse
 direct_inverse_is_recursive_inverse
+Nat.exists_xor_add_one_eq_two_pow
+alternate_direct_gray_code_proof
