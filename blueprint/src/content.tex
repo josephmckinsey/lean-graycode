@@ -368,7 +368,7 @@
 
 \begin{proof}
     \leanok
-    Suppose $n = 0$, then $0 ^^^ 1 = 1 = 2^2 - 1$, so $k = 2 > 0$.
+    Suppose $n = 0$, then $0 \oplus 1 = 1 = 2^2 - 1$, so $k = 2 > 0$.
 
     Here, we'll need $2 a \oplus 2 b = 2 (a \oplus b)$ as well as
     $2 a + 1 = 2 a \oplus 1$.
@@ -409,5 +409,5 @@
 In general, we should be able to complete many of the proofs by considering $\mathbb{N}$ to
 be a group under $\oplus$. With this, proving that the kernel is $0$ is sufficient to prove
 injectivity, which is easier in the injective case. Instead of using induction for most things,
-we can also use the fact that $\{2^n\}_n$ and $\{2^(n+1) - 1\} each generate the group.
+we can also use the fact that $\{2^n\}_n$ and $\{2^{n+1} - 1\}$ each generate the group.
 I might try this approach if I were to dig in deeper.
