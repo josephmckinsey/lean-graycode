@@ -1,5 +1,8 @@
-import Mathlib
-import Mathlib.Algebra.Ring.GeomSum
+import Mathlib.Tactic.FinCases
+import Mathlib.Data.ZMod.Defs
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Data.Int.Star
+import Mathlib.Data.Nat.Log
 import Mathlib.Data.Nat.Bitwise
 import Mathlib.Analysis.Normed.Ring.Lemmas  -- I have no idea why this is necessary
 
@@ -28,16 +31,6 @@ example : next_to 4 5 := by
     have : 3 ≤ k := by grind
     rw [List.getI_eq_default [false, false, true] (by simp [this])]
     rw [List.getI_eq_default [true, false, true] (by simp [this])]
-
-
-#check geom_sum_two
-
-lemma geom_sum_pow_two (n : ℕ) : ∑ i ∈ Finset.range n, 2 ^ i = 2^n - 1 := by
-  have := Nat.geomSum_eq (m := 2) Nat.AtLeastTwo.prop n
-  simp [this]
-
-#check Nat.testBit_two_pow_sub_one
-
 
 /--
 Note that $2^k - 1 = 1 + \cdots + 2^{k-1}$. Thus $(2^k - 1)_i = 1$ for
@@ -369,8 +362,6 @@ lemma reverse_unit_step {α : Type*} [AddCommGroup α] [One α] (x : α → ℕ)
   rw [<-sub_sub l i 1]
   simp
 
-
-#check (2 : Fin 3) + (4 : ℕ)
 
 example (n : ℕ) [NeZero n] (i : ℕ) :
     (((2 : Fin n) ^ i) : Fin n) = 2^(i : ℕ) := by
