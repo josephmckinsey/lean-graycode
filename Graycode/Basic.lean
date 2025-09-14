@@ -164,7 +164,7 @@ def IsUnitStepSeq {α : Type*} [AddMonoid α] [One α] (x : α → ℕ) : Prop :
   ∀i, next_to (x i) (x (i + 1))
 
 def IsGrayCode {α : Type*} [AddMonoid α] [One α] (x : α → ℕ) : Prop :=
-  IsUnitStepSeq x ∧ Function.Injective x
+  IsUnitStepSeq x ∧ Function.Bijective x
 
 def list_gray_code : ℕ → List ℕ
 | 0 => [0]
@@ -785,7 +785,7 @@ def equiv_gray_code : ℕ ≃ ℕ where
   right_inv := recursive_inverse_is_right_inverse
 
 theorem recursive_is_gray_code : IsGrayCode recursive_gray_code :=
-  ⟨recursive_gray_code_unit_step, recursive_inverse_is_left_inverse.injective⟩
+  ⟨recursive_gray_code_unit_step, equiv_gray_code.bijective⟩
 
 
 def direct_inverse (n : ℕ) : ℕ :=

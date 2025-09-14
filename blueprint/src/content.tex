@@ -85,7 +85,7 @@
     \leanok
     \uses{def:unit_step_sequence}
 
-    A gray code is an injective unit step sequence (and preferably with a nice image).
+    A gray code is a bijective unit step sequence (and preferably with a nice image).
 \end{definition}
 
 \begin{definition}
@@ -354,10 +354,10 @@
 \begin{proof}
     \uses{thm:recursive_gray_code_unit_step,def:gray_code,thm:recursive_inverse_is_inverse}
     \leanok
-    Injectivity and unit step sequence 
+    Bijectivity and unit step sequence 
 \end{proof}
 
-\chapter{Some alternate proofs}
+\chapter{An alternate direct proof}
 
 \begin{lemma}
     \label{thm:add_one_xor}
@@ -406,8 +406,86 @@
     This completes the proof.
 \end{proof}
 
-In general, we should be able to complete many of the proofs by considering $\mathbb{N}$ to
-be a group under $\oplus$. With this, proving that the kernel is $0$ is sufficient to prove
-injectivity, which is easier in the injective case. Instead of using induction for most things,
-we can also use the fact that $\{2^n\}_n$ and $\{2^{n+1} - 1\}$ each generate the group.
-I might try this approach if I were to dig in deeper.
+These proofs suggest considering $2^n - 1$ and $2^k$ only and then lifting the proofs to the full maps.
+We can do this in the next section by considering them as linear maps over $\mathbb{Z}_2$ over the vector
+space $(\mathbb{N}, \oplus)$.
+
+\chapter{Using linear algebra instead}
+
+\begin{definition}
+    \label{def:natural_numbers_vector_space}
+    $\mathbb{N}$ is a vector space with $\mathbb{k} = \mathbb{Z}_2$ and $+ := \oplus$
+
+    A XOR homomorphism (i.e. a function $f$ such that $f(x \oplus y) = f(x) \oplus f(y)$) is
+    a linear map between $\mathbb{N}$ when considered as a $\mathbb{Z}_2$ vector space under $\oplus$.
+\end{definition}
+
+\begin{lemma}
+    \label{thm:next_to_xor_homo_two_pow}
+    \uses{def:natural_numbers_vector_space}
+    A XOR homomorphism $f$ which puts $f(x)$ next to $f(x + 1)$ is sends $2^n - 1$ to $2^k$
+    for each $n > 0$.
+\end{lemma}
+
+\begin{proof}
+    \uses{thm:add_one_xor}
+    $f(x \otimes x + 1) = f(2^n - 1) = 2^k$.
+\end{proof}
+
+\begin{lemma}
+    \label{thm:two_pow_xor_basis}
+    $2^n$ form a basis of the vector space $(\mathbb{N}, \oplus)$.
+\end{lemma}
+
+\begin{proof}
+    Straightforward.
+\end{proof}
+
+\begin{lemma}
+    \label{thm:two_pow_sub_one_xor_basis}
+    $2^n - 1$ with $n > 0$ form a basis of the vector space $(\mathbb{N}, \oplus)$.
+\end{lemma}
+
+\begin{proof}
+    Straightforward.
+\end{proof}
+
+\begin{lemma}
+    \label{thm:bijective_gray_code_characterization}
+    \uses{def:gray_code}
+    Every Gray code $f$ is uniquely defined by a bijection from $\{1,\ldots\}$, $\{0,ldots\}$
+    indexing $\{2^n - 1 \, | \, n > 0\}$ and $\{2^n \, | n \in \mathbb{N} \}$, given
+    by where $f$ sends each $2^n - 1$.
+\end{lemma}
+
+\begin{proof}
+    \uses{thm:two_pow_xor_basis,thm:two_pow_sub_one_xor_basis,def:natural_numbers_vector_space}
+    Each Gray code is a map from $2^n - 1$ to $2^k$. Since a Gray code is bijective,
+    this map must be bijective. Any given map lifts to a linear map $\mathbb{N} \to \mathbb{N}$.
+    The basis restriction then proves that the linear map is a Gray code.
+\end{proof}
+
+\begin{theorem}
+    \label{thm:linear_algebra_direct_proof}
+    \uses{def:gray_code,def:direct_gray_code}
+    We can then more easily prove that $x \oplus x >>> 1$ is a Gray code.
+\end{theorem}
+
+\begin{proof}
+    \uses{thm:add_one_xor,thm:bijective_gray_code_characterization}
+    We already have that $2^k - 1 \oplus (2^k - 1) >>> 1 = 2^(k-1)$ for $k > 0$. This
+    proves the Gray code property, since it is a homomorphism and the mapping is bijective
+    (sending $n \mapsto n - 1$ for $n > 0$ to $n \geq 0$).
+\end{proof}
+
+\begin{theorem}
+    \label{thm:alternate_inverse_proof}
+    \uses{def:computable_inverse,def:direct_gray_code}
+    The correctness of the inverse can similarly be simplified.
+\end{theorem}
+
+\begin{proof}
+    \uses{def:natural_numbers_vector_space}
+    First, prove that the inverse is a xor homomorphism, and then that it sends $2^n$ to $2^(n+1) - 1$.
+    By considering only the basis elements, the linear map is the inverse.
+\end{proof}
