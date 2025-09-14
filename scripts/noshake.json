@@ -1,1 +1,3 @@
-{}
+{
+    "ignore": {"Graycode.Basic": ["Mathlib.Tactic.FinCases"]}
+}
