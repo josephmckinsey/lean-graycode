@@ -1,13 +1,12 @@
-# graycode-lean
+# Graycode Lean Blueprint
 
-## GitHub configuration
+[Homepage](https://josephmckinsey.github.io/lean-graycode/).
 
-To set up your new GitHub repository, follow these steps:
+Formalization of [Gray code](https://en.wikipedia.org/wiki/Gray_code).
 
-* Under your repository name, click **Settings**.
-* In the **Actions** section of the sidebar, click "General".
-* Check the box **Allow GitHub Actions to create and approve pull requests**.
-* Click the **Pages** section of the settings sidebar.
-* In the **Source** dropdown menu, select "GitHub Actions".
+* Lots of bitwise lemmas about `^^^` and power of twos in $\mathbb{N}$.
+* Definitions and theorems for Gray code sequences.
 
-After following the steps above, you can remove this section from the README file.
+## Not formalized
+
+* Linear algebraic characterization via $\mathbb{Z}_2$ vector spaces and XOR homomorphisms.
