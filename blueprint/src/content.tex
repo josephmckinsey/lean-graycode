@@ -438,7 +438,11 @@ space $(\mathbb{N}, \oplus)$.
 \end{lemma}
 
 \begin{proof}
-    Straightforward.
+    For any given $x \in \mathbb{N}$, we can find the $i$th bit and that
+    gives us the $i$th basis coefficient. The reverse takes the support $s$
+    and does $\sum_{i \in s} 2^i$.
+
+    This mapping is bijective and bit test preserves $\oplus$.
 \end{proof}
 
 \begin{lemma}
@@ -447,7 +451,14 @@ space $(\mathbb{N}, \oplus)$.
 \end{lemma}
 
 \begin{proof}
-    Straightforward.
+    We can construct an equivalence with the basis on $2^n$.
+
+    Since $2^n = (2^{n+1} - 1) \oplus (2^{n} - 1)$ for $n > 0$ and $2^0 = 2^1 - 1$.
+    For the reverse, we can do $2^{n+1} - 1 = 2^0 \oplus \cdots \oplus 2^n$.
+
+    Now it only remains to prove that they are independent. Since
+    $(\bigoplus_{i \in s} 2^i - 1)_{\max(s)} = 1$, we have that any nontrivial
+    sum is nonzero.
 \end{proof}
 
 \begin{lemma}
