@@ -1,30 +1,66 @@
 import Mathlib
 
-def BinaryNat := ℕ
-  deriving Zero, Inhabited, One, Nontrivial, WellFoundedRelation, LinearOrder
+@[ext]
+structure BinaryNat where
+  ofNat ::
+    (toNat : ℕ)
+deriving Inhabited, Repr
 
-def BinaryNat.toNat (n : BinaryNat) : ℕ := n
+
+@[simp]
+lemma BinaryNat.toNat_ofNat (x : ℕ) : (BinaryNat.ofNat x).toNat = x := rfl
+
+instance : Zero BinaryNat where
+  zero := BinaryNat.ofNat 0
+
+@[simp]
+lemma BinaryNat.toNat_zero : (0 : BinaryNat).toNat = 0 := rfl
+
+instance : One BinaryNat where
+  one := .ofNat 1
+
+@[simp]
+lemma BinaryNat.toNat_one : (1 : BinaryNat).toNat = 1 := rfl
+
+instance : Nontrivial BinaryNat where
+  exists_pair_ne := let ⟨x, y, h⟩ := (inferInstance :  Nontrivial ℕ).exists_pair_ne;
+    ⟨.ofNat x, .ofNat y, by simp [h]⟩
+
+instance : WellFoundedRelation BinaryNat where
+  rel x y := WellFoundedRelation.rel x.toNat y.toNat
+  wf := WellFounded.onFun (WellFoundedRelation.wf)
+
+instance : LinearOrder BinaryNat where
+  le x y := LE.le x.toNat y.toNat
+  le_refl x := Preorder.le_refl x.toNat
+  le_trans x y z := Preorder.le_trans x.toNat y.toNat z.toNat
+  le_antisymm x y h h' := BinaryNat.ext (PartialOrder.le_antisymm x.toNat y.toNat h h')
+  le_total x y := LinearOrder.le_total x.toNat y.toNat
+  toDecidableLE x y := inferInstance
 
 instance : Add BinaryNat where
-  add := Nat.xor
+  add x y := .ofNat (Nat.xor x.toNat y.toNat)
 
 lemma BinaryNat.add_eq (x y : BinaryNat) : x + y =
-  x.toNat ^^^ y.toNat := rfl
+  .ofNat (x.toNat ^^^ y.toNat) := rfl
 
 instance : Mul BinaryNat where
-  mul := Nat.land
+  mul x y := .ofNat (Nat.land x.toNat y.toNat)
 
-lemma BinaryNat.mul_eq (x y : BinaryNat) : x * y = x.toNat &&& y.toNat := rfl
+lemma BinaryNat.mul_eq (x y : BinaryNat) : x * y = .ofNat (x.toNat &&& y.toNat) := rfl
 
 @[simp]
 instance : Neg BinaryNat where
   neg := id
 
 instance (n : Nat) : OfNat BinaryNat n where
-  ofNat := n
+  ofNat := .ofNat n
 
 @[simp]
-lemma BinaryNat.add_self (x : BinaryNat) : x + x = 0 := Nat.xor_self x
+lemma BinaryNat.toNat_NatofNat (x : ℕ) : (OfNat.ofNat x : BinaryNat).toNat = x := by rfl
+
+@[simp]
+lemma BinaryNat.add_self (x : BinaryNat) : x + x = 0 := BinaryNat.ext (Nat.xor_self x.toNat)
 
 @[reducible, simp]
 def binaryNat_fast_nsmul (n : ℕ) (x : BinaryNat) := if Even n then 0 else x
@@ -36,25 +72,25 @@ def binaryNat_fast_zsmul (n : ℤ) (x : BinaryNat) := if Even n then 0 else x
 def binaryNat_fast_zmodmul (n : ZMod 2) (x : BinaryNat) := if n == 0 then 0 else x
 
 instance : AddCommGroup BinaryNat where
-  add_assoc := Nat.xor_assoc
-  zero_add := Nat.zero_xor
-  add_zero := Nat.xor_zero
-  add_comm := Nat.xor_comm
-  neg_add_cancel := Nat.xor_self
+  add_assoc x y z := BinaryNat.ext (Nat.xor_assoc x.toNat y.toNat z.toNat)
+  zero_add x := BinaryNat.ext (Nat.zero_xor x.toNat)
+  add_zero x := BinaryNat.ext (Nat.xor_zero x.toNat)
+  add_comm x y := BinaryNat.ext (Nat.xor_comm x.toNat y.toNat)
+  neg_add_cancel x := BinaryNat.ext (Nat.xor_self x.toNat)
   nsmul := binaryNat_fast_nsmul
   zsmul := binaryNat_fast_zsmul
   nsmul_succ n x := by
     by_cases h : Even n
     · have : ¬Even (n + 1) := by grind
       simp [h, this]
-      exact (Nat.zero_xor x).symm
+      exact BinaryNat.ext (Nat.zero_xor x.toNat).symm
     have : Even (n+1) := by grind
     simp [h, this]
   zsmul_succ' n x := by
     by_cases h : Even n
     · have : ¬Even ((n : ℤ) + 1) := by grind
       simp [h, this]
-      exact (Nat.zero_xor x).symm
+      exact BinaryNat.ext (Nat.zero_xor x.toNat).symm
     have : Even ((n : ℤ) + 1) := by grind
     simp [h, this]
   zsmul_neg' n x := by
@@ -84,7 +120,7 @@ instance : Module (ZMod 2) BinaryNat where
 abbrev BitVector := ℕ →₀ (ZMod 2)
 
 @[simp]
-theorem Nat.bitIndices_getElem_iff_testBit (n : BinaryNat) (i : ℕ) :
+theorem Nat.bitIndices_getElem_iff_testBit (n : ℕ) (i : ℕ) :
     i ∈ Nat.bitIndices n ↔ Nat.testBit n i = true := by
   induction n using binaryRec generalizing i with
   | z => simp
@@ -98,15 +134,15 @@ theorem Nat.bitIndices_getElem_iff_testBit (n : BinaryNat) (i : ℕ) :
 
 def binaryNatToBitVector : BinaryNat → BitVector := fun n =>
   {
-    support := (Nat.bitIndices n).toFinset
-    toFun := fun i => if n.testBit i then 1 else 0
+    support := (Nat.bitIndices n.toNat).toFinset
+    toFun := fun i => if n.toNat.testBit i then 1 else 0
     mem_support_toFun := by
       intro i
       simp
   }
 
 def bitVectorToBinaryNat : BitVector → BinaryNat := fun n =>
-  Finset.equivBitIndices.invFun n.support
+  .ofNat (Finset.equivBitIndices.invFun n.support)
 
 @[simp]
 lemma geomSum_testBit (s : Finset ℕ) (i : ℕ) :
@@ -141,8 +177,8 @@ def binaryNat_bitVector_add_iso : BinaryNat ≃+ BitVector where
     ext i
     simp [binaryNatToBitVector]
     rw [BinaryNat.add_eq, Nat.testBit_xor]
-    rw [show Nat.testBit x i = x.toNat.testBit i by rfl]
-    rw [show Nat.testBit y i = y.toNat.testBit i by rfl]
+    rw [show Nat.testBit x.toNat i = x.toNat.testBit i by rfl]
+    rw [show Nat.testBit y.toNat i = y.toNat.testBit i by rfl]
     grind
 
 
@@ -182,9 +218,8 @@ toFun n = for i < n.log2, (1 - toFun (complement n)), for i = n.log2, 1
 invFun f = Finsupp.sum f (fun n b => (b • (2^(n+1) - 1)))
 -/
 
-def powerOfTwoMinusOne (i : ℕ) : BinaryNat := (2^(i+1) - 1 : ℕ)
+def powerOfTwoMinusOne (i : ℕ) : BinaryNat := .ofNat (2^(i+1) - 1)
 
-/-
 noncomputable def powerOfTwoMinusOneBasis : Module.Basis ℕ (ZMod 2) BinaryNat := Module.Basis.mk (v := powerOfTwoMinusOne)
   (by
     rw [linearIndependent_iff]
@@ -193,11 +228,19 @@ noncomputable def powerOfTwoMinusOneBasis : Module.Basis ℕ (ZMod 2) BinaryNat 
     -- First, we'll get the largest
     unfold Finsupp.linearCombination
     simp
+    simp_rw [powerOfTwoMinusOne.eq_def]
+    have : v.support.Nonempty := Finsupp.support_nonempty_iff.mpr h
+    have : ∀f : _ → _ → BinaryNat, v.sum f = v.support.sum (fun i => f i 1) := by sorry
+    rw [this]
+    simp
+    -- prove by induction on the size of v.support?
+
+
+
     have : Finsupp.basisSingleOne 1
 
   )
   (by sorry)
--/
 
 -- Noncomputable :(
 --#eval (test_bitvector + test_bitvector) 3
